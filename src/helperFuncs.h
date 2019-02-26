@@ -16,7 +16,15 @@ namespace RegistryStatusEnumFlags {
         Echo    = 5,
         Foxtrot = 6,
         Golf    = 7,
-        Hotel   = 8
+        Hotel   = 8,
+        India   = 9,
+        Juliett = 10,
+        Kilo    = 11,
+        Lima    = 12,
+        Mike    = 13,
+        November= 14,
+        Oscar   = 15,
+        Papa    = 16
     };
 }
 
@@ -51,14 +59,24 @@ int sc_memoryLoad(char* arr_c_path, int* ptr_arr_i_array01);
 */
 
 //Initialize flag for EVM
-char* sc_flagInit();
+int* sc_flagInit();
 
 //Set state to a EVM flag
-int sc_flagSet(char* ptr_c_flag, enumFlag enumFlag_mask01, bool b_state);
+int sc_flagSet(int* ptr_i_flag, enumFlag enumFlag_mask01, bool b_state);
 
 //Overwrite state in passed pointer with stored state in EVM flag by RegistryStatusEnumFlags enum
-int sc_flagGet(char* c_flag, enumFlag enumFlag_mask01, bool* ptr_b_state);
+int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01, bool* ptr_b_state);
 //Return state stored in EVM flag by RegistryStatusEnumFlags enum
-int sc_flagGet(char* c_flag, enumFlag enumFlag_mask01);
+int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01);
+
+/*
+*
+*   Command System
+*
+*/
+
+int sc_commandEncode(int i_command, int i_operand, int* ptr_i_value);
+
+int sc_commandDecode(int value, int* command, int* operand);
 
 #endif
