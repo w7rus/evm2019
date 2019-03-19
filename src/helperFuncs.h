@@ -1,12 +1,6 @@
 #ifndef HELPERFUNCS_H
 #define HELPERFUNCS_H
 
-#include <cstdlib>
-#include <cstdio>
-#include <fstream>
-#include <new>
-#include <typeinfo>
-
 namespace RegistryStatusEnumFlags {
     enum enumFlag {
         Alpha   = 1,
@@ -28,7 +22,21 @@ namespace RegistryStatusEnumFlags {
     };
 }
 
+namespace TerminalColorsEnums {
+    enum termClr {
+        BLACK   = 30,
+        RED     = 31,
+        GREEN   = 32,
+        YELLOW  = 33,
+        BLUE    = 34,
+        MAGENTA = 35,
+        CYAN    = 36,
+        WHITE   = 37
+    };
+}
+
 using namespace RegistryStatusEnumFlags;
+using namespace TerminalColorsEnums;
 
 /*
 *
@@ -78,5 +86,23 @@ int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01);
 int sc_commandEncode(int i_command, int i_operand, int* ptr_i_value);
 
 int sc_commandDecode(int value, int* command, int* operand);
+
+/*
+*
+*   Visual System
+*
+*/
+
+void mt_getScreenSize(int* width, int* height);
+
+void mt_setCurPos(int x, int y);
+
+void mt_getCurPos(int* x, int* y);
+
+void mt_setCurFgColor(termClr color, bool bright);
+
+void mt_setCurBgColor(termClr color, bool bright);
+
+void mt_clrscr();
 
 #endif

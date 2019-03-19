@@ -1,11 +1,12 @@
 G++ = g++
-G++FLAGS = -c -Wall -Werror
+G++FLAGS = -c -Wall -Werror -Wno-unused-variable
 VPATH = src:build
 PATH_IN = ./src/
 PATH_BUILD = ./build/
 PATH_OUT = ./bin/
 evm2019_main = main
 evm2019_helperFuncs = helperFuncs
+#evm2019_conMenu = conMenu
 
 all: app clean
 

@@ -3,8 +3,12 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <fstream>
 #include <new>
 #include <typeinfo>
+#include <iostream>
+#include <string>
+#include <sstream>
 
 namespace RegistryStatusEnumFlags {
     enum enumFlag {
@@ -27,7 +31,21 @@ namespace RegistryStatusEnumFlags {
     };
 }
 
+namespace TerminalColorsEnums {
+    enum termClr {
+        BLACK   = 30,
+        RED     = 31,
+        GREEN   = 32,
+        YELLOW  = 33,
+        BLUE    = 34,
+        MAGENTA = 35,
+        CYAN    = 36,
+        WHITE   = 37
+    };
+}
+
 using namespace RegistryStatusEnumFlags;
+using namespace TerminalColorsEnums;
 
 /*
 *
@@ -94,10 +112,12 @@ int* sc_flagInit() {
 int sc_flagSet(int* ptr_i_flag, enumFlag enumFlag_mask01, bool b_state) {
     if (typeid(enumFlag_mask01) != typeid(enumFlag))
         return -1;
-    if (b_state) {
+    if (b_state == true) {
+        std::cout << "ISTRUE";
         *ptr_i_flag = *ptr_i_flag | (1 << (int(enumFlag_mask01) - 1));
     } else {
-        *ptr_i_flag = *ptr_i_flag | (1 << (~(int(enumFlag_mask01) - 1)));
+        std::cout << "ISFALSE";
+        *ptr_i_flag = *ptr_i_flag & (~(1 << (int(enumFlag_mask01) - 1)));
     }
     return 0;
 }
@@ -132,10 +152,110 @@ int sc_commandDecode(int i_value, int* ptr_i_command, int* ptr_i_operand) {
     if (!((i_value >> 14) & 0x1)) {
         *ptr_i_command = (i_value & 0x3F80) >> 7;
         *ptr_i_operand = i_value & 0x7F;
-        return 0;
+        
+        if ((*ptr_i_command == 10 || *ptr_i_command == 11 || *ptr_i_command == 20 || *ptr_i_command == 21 || (*ptr_i_command > 29 && *ptr_i_command < 34) || (*ptr_i_command > 39 && *ptr_i_command < 44) || (*ptr_i_command > 50 && *ptr_i_command < 77))) {
+            return 0;
+        }
+        return -1;
     } else {
         return -1;
     }
+}
+
+/*
+*
+*   Visual System
+*
+*/
+
+#ifdef _WIN32
+    #include <Windows.h>
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
+
+#ifdef __linux
+    #include <sys/ioctl.h>
+    #include <termios.h>
+#endif
+
+template<typename T>
+std::string toString(const T& value)
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+void mt_getScreenSize(int* width, int* height) {
+    #ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+        *width = csbi.dwSize.X;
+        *height = csbi.dwSize.Y;
+    #elif __linux
+        struct winsize size;
+        ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+        *width = size.ws_col;
+        *height = size.ws_row;
+    #endif
+}
+
+void mt_setCurPos(int x, int y) {
+    #ifdef _WIN32
+        COORD pos = {(short)x, (short)y};
+        SetConsoleCursorPosition(hStdOut, pos);
+    #elif __linux
+        std::string esc1 = "\033[";
+        std::string esc2 = toString(y);
+        std::string esc3 = toString(';');
+        std::string esc4 = toString(x);
+        std::string esc5 = toString('H');
+        std::cout << esc1 + esc2 + esc3 + esc4 + esc5;
+    #endif
+}
+
+void mt_getCurPos(int* x, int* y) {
+    #ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+        *x = csbi.dwCursorPosition.X;
+        *y = csbi.dwCursorPosition.Y;
+        return;
+    #elif __linux
+        *x = 0;
+        *y = 0;
+        return;
+    #endif
+}
+
+void mt_setCurFgColor(termClr color, bool bright) {
+    std::string esc1 = "\033[";
+    std::string esc2 = toString(color);
+    std::string esc4;
+    if (bright) {
+        esc4 = ";1";
+    } else {
+        esc4 = "";
+    }
+    std::string esc5 = "m";
+    std::cout << esc1 + esc2 + esc4 + esc5;
+}
+
+void mt_setCurBgColor(termClr color, bool bright) {
+    std::string esc1 = "\033[";
+    std::string esc2 = toString(color + 10);
+    std::string esc4;
+    if (bright) {
+        esc4 = ";1";
+    } else {
+        esc4 = "";
+    }
+    std::string esc5 = "m";
+    std::cout << esc1 + esc2 + esc4 + esc5;
+}
+
+void mt_clrscr() {
+    std::cout<<"\033[2J";
 }
 
 #endif
