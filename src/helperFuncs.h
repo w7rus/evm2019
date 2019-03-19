@@ -95,7 +95,7 @@ int sc_commandDecode(int value, int* command, int* operand);
 
 void mt_getScreenSize(int* width, int* height);
 
-void mt_setCurPos(int x, int y);
+void mt_setCurPos(int _x, int _y, int x, int y);
 
 void mt_getCurPos(int* x, int* y);
 

@@ -1,5 +1,5 @@
 G++ = g++
-G++FLAGS = -c -Wall -Werror -Wno-unused-variable
+G++FLAGS = -c -Wall -Werror -Wno-unused-variable -Wno-narrowing
 VPATH = src:build
 PATH_IN = ./src/
 PATH_BUILD = ./build/

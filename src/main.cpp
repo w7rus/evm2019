@@ -25,24 +25,27 @@ int main(int argc, char const *argv[]) {
         int* conWidth = new int;
         int* conHeight = new int;
         mt_getScreenSize(conWidth, conHeight);
-        int* curPosX = new int;
-        int* curPosY = new int;
-        mt_getCurPos(curPosX, curPosY);
 
-        int* panelPosX_MEMORY = new int;
-        int* panelPosY_MEMORY = new int;
-        int* panelPosX_STATUS = new int;
-        int* panelPosY_STATUS = new int;
+        int* curPosX = new int(0);
+        int* curPosY = new int(0);
+        #ifdef _WIN32
+            mt_getCurPos(curPosX, curPosY);
+        #endif
+
+        int* panelPosX_MEMORY = new int(0);
+        int* panelPosY_MEMORY = new int(0);
+        int* panelPosX_STATUS = new int(*conWidth * .5);
+        int* panelPosY_STATUS = new int(0);
 
         mt_clrscr();
 
-        mt_getCurPos(panelPosX_MEMORY, panelPosY_MEMORY);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_MEMORY, *panelPosY_MEMORY);
         std::cout << std::setfill('=') << "[" << panelTitle_MEMORY << "]" << std::setw(*conWidth * .5 - 2 - panelTitle_MEMORY.size()) << "" << std::setfill(' ');
 
-        mt_getCurPos(panelPosX_STATUS, panelPosY_STATUS);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_STATUS, *panelPosY_STATUS);
         std::cout << std::setfill('=') << "[" << panelTitle_STATUS << "]" << std::setw(*conWidth * .5 - 2 - panelTitle_MEMORY.size()) << "" << std::setfill(' ');
 
-        mt_setCurPos(*panelPosX_MEMORY, *panelPosY_MEMORY + 1);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_MEMORY, *panelPosY_MEMORY + 1);
         for (int _counter = 0; _counter < 100; _counter++) {
             if (_counter == evmMemoryOffset) {
                 mt_setCurFgColor(TerminalColorsEnums::RED, true);
@@ -55,12 +58,12 @@ int main(int argc, char const *argv[]) {
                 std::cout << std::endl;
         }
 
-        mt_setCurPos(*panelPosX_STATUS, *panelPosY_STATUS + 1);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_STATUS, *panelPosY_STATUS + 1);
         std::cout << "ACCUMULATOR: " << accumulator;
 
-        mt_setCurPos(*panelPosX_STATUS, *panelPosY_STATUS + 2);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_STATUS, *panelPosY_STATUS + 2);
         std::cout << "FLAGS: A B C D E F G H";
-        mt_setCurPos(*panelPosX_STATUS, *panelPosY_STATUS + 3);
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_STATUS, *panelPosY_STATUS + 3);
         std::cout << "       "  << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Alpha) << " "
                                 << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Bravo) << " "
                                 << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Charlie) << " "
@@ -70,7 +73,7 @@ int main(int argc, char const *argv[]) {
                                 << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Golf) << " "
                                 << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Hotel) << " ";
 
-        mt_setCurPos(*panelPosX_MEMORY, *panelPosY_MEMORY + 1 + ceil(100 / (*conWidth * .5 / 3)));
+        mt_setCurPos(*curPosX, *curPosY, *panelPosX_MEMORY, *panelPosY_MEMORY + 1 + ceil(100 / (*conWidth * .5 / 3)));
         std::cout << std::setfill('=') << std::setw(*conWidth) << "" << std::setfill(' ') << std::endl;
         std::cout << std::left << std::setw(20) << "[W] Offset++" << std::setw(20) << "[S] Offset--" << std::setw(20) << "[A] Action 3" << std::setw(20) << "[D] Action 4" << std::setw(20) << "[E] Action 5" << std::setw(20) << "[0] Exit" << std::endl;
         char keyPressed = std::cin.get();

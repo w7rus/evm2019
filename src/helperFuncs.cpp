@@ -200,9 +200,9 @@ void mt_getScreenSize(int* width, int* height) {
     #endif
 }
 
-void mt_setCurPos(int x, int y) {
+void mt_setCurPos(int _x, int _y, int x, int y) {
     #ifdef _WIN32
-        COORD pos = {(short)x, (short)y};
+        COORD pos = {(short)x + (short)_x, (short)y + (short)_y};
         SetConsoleCursorPosition(hStdOut, pos);
     #elif __linux
         std::string esc1 = "\033[";
@@ -222,8 +222,6 @@ void mt_getCurPos(int* x, int* y) {
         *y = csbi.dwCursorPosition.Y;
         return;
     #elif __linux
-        *x = 0;
-        *y = 0;
         return;
     #endif
 }
