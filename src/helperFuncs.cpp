@@ -195,8 +195,8 @@ void mt_getScreenSize(int* width, int* height) {
     #elif __linux
         struct winsize size;
         ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
-        *width = size.ws_col;
-        *height = size.ws_row;
+        *width = size.ws_col - 1;
+        *height = size.ws_row - 1;
     #endif
 }
 
