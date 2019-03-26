@@ -11,6 +11,49 @@
 using namespace RegistryStatusEnumFlags;
 using namespace TerminalColorsEnums;
 
+uint32_t TEST[2] = {0xffffffff, 0xffffffff};
+uint32_t ZERO[2] = {0xc3c3ffff, 0xffffc3c3};
+uint32_t ONE[2] = {0x3030303, 0x3030303};
+uint32_t TWO[2] = {0xffc0ffff, 0xffff03ff};
+uint32_t THREE[2] = {0xff03ffff, 0xffff03ff};
+uint32_t FOUR[2] = {0xff030303, 0xc3c3c3ff};
+uint32_t FIVE[2] = {0xff03ffff, 0xffffc0ff};
+uint32_t SIX[2] = {0xffc3ffff, 0xffffc0ff};
+uint32_t SEVEN[2] = {0x03030303, 0xffff0303};
+uint32_t EIGHT[2] = {0xffc3ffff, 0xffffc3ff};
+uint32_t NINE[2] = {0xff03ffff, 0xffffc3ff};
+
+int bc_bitGet(uint32_t i_value, enumFlag enumFlag_mask01) {
+    if (typeid(enumFlag_mask01) != typeid(enumFlag))
+        return -1;
+    return ((i_value) >> (uint32_t(enumFlag_mask01) - 1)) & 0x1;
+}
+
+void bc_printBigChar (uint32_t mask[2], int x, int y, termClr colorFG, termClr colorBG) {
+
+    mt_setCurPos(x, y);
+
+    int lineCount = 0;
+
+    for (int i = 1; i > -1; i--) {
+        for (int j = 31; j > -1; j--) {
+            if (bc_bitGet(mask[i], static_cast<enumFlag>(j + 1))) {
+                std::cout << "\u2588";
+            } else {
+                std::cout << ' ';
+            }
+
+            if (j % 8 == 0) {
+                lineCount++;
+                mt_setCurPos(x, y + lineCount);
+            }
+        }
+    }
+
+    return;
+
+}
+
 int main(int argc, char const *argv[]) {
     register int accumulator = 0;
     int evmMemoryOffset = 0;
@@ -34,6 +77,8 @@ int main(int argc, char const *argv[]) {
         int* panelPosY_MEMORY = new int(1);
         int* panelPosX_STATUS = new int(*conWidth * .5 + 1);
         int* panelPosY_STATUS = new int(1);
+        int* panelPosX_SELECTED = new int(1);
+        int* panelPosY_SELECTED = new int(*panelPosY_MEMORY + 2 + ceil(100 / (*conWidth * .5 / 6)));
 
         mt_clrscr();
 
@@ -62,20 +107,30 @@ int main(int argc, char const *argv[]) {
         mt_setCurPos(*panelPosX_STATUS, *panelPosY_STATUS + 2);
         std::cout << "FLAGS: A B C D E F G H";
         mt_setCurPos(*panelPosX_STATUS, *panelPosY_STATUS + 3);
-        std::cout << "       "  << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Alpha) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Bravo) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Charlie) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Delta) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Echo) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Foxtrot) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Golf) << " "
-                                << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Hotel) << " ";
+        std::cout << "       "  << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Alpha) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Bravo) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Charlie) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Delta) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Echo) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Foxtrot) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Golf) << " "
+                                << sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Hotel) << " ";
 
-
-        mt_setCurPos(*panelPosX_MEMORY, *panelPosY_MEMORY + 2 + ceil(100 / (*conWidth * .5 / 6)));
+        mt_setCurPos(*panelPosX_SELECTED, *panelPosY_SELECTED);
         std::cout << std::setfill('=') << std::setw(*conWidth) << std::left << panelTitle_SELECTED << std::setfill(' ') << std::endl;
 
-        mt_setCurPos(*panelPosX_MEMORY, *panelPosY_MEMORY + 11 + ceil(100 / (*conWidth * .5 / 6)));
+        bc_printBigChar(ZERO, *panelPosX_SELECTED, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(ONE, *panelPosX_SELECTED + 9, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(TWO, *panelPosX_SELECTED + 9 * 2, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(THREE, *panelPosX_SELECTED + 9 * 3, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(FOUR, *panelPosX_SELECTED + 9 * 4, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(FIVE, *panelPosX_SELECTED + 9 * 5, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(SIX, *panelPosX_SELECTED + 9 * 6, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(SEVEN, *panelPosX_SELECTED + 9 * 7, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(EIGHT, *panelPosX_SELECTED + 9 * 8, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+        bc_printBigChar(NINE, *panelPosX_SELECTED + 9 * 9, *panelPosY_SELECTED + 1, termClr::GREEN, termClr::BLACK);
+
+        mt_setCurPos(*panelPosX_SELECTED, *panelPosY_SELECTED + 9);
         std::cout << std::setfill('=') << std::setw(*conWidth) << "" << std::setfill(' ') << std::endl;
 
         std::cout << std::left  << std::setw(20) << "[W] Offset++"

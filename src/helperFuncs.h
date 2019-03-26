@@ -18,7 +18,22 @@ namespace RegistryStatusEnumFlags {
         Mike    = 13,
         November= 14,
         Oscar   = 15,
-        Papa    = 16
+        Papa    = 16,
+        Quebec  = 17,
+        Romeo   = 18,
+        Sierra  = 19,
+        Tango   = 21,
+        Uniform = 22,
+        Victor  = 23,
+        Whiskey = 24,
+        Xray    = 25,
+        Yankee  = 26,
+        Zulu    = 27,
+        One     = 28,
+        Two     = 29,
+        Three   = 30,
+        Four    = 31,
+        Five    = 32
     };
 }
 
@@ -73,9 +88,9 @@ int* sc_flagInit();
 int sc_flagSet(int* ptr_i_flag, enumFlag enumFlag_mask01, bool b_state);
 
 //Overwrite state in passed pointer with stored state in EVM flag by RegistryStatusEnumFlags enum
-int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01, bool* ptr_b_state);
+int sc_flagGet(int i_flag, enumFlag enumFlag_mask01, bool* ptr_b_state);
 //Return state stored in EVM flag by RegistryStatusEnumFlags enum
-int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01);
+int sc_flagGet(int i_flag, enumFlag enumFlag_mask01);
 
 /*
 *

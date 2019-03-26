@@ -27,7 +27,22 @@ namespace RegistryStatusEnumFlags {
         Mike    = 13,
         November= 14,
         Oscar   = 15,
-        Papa    = 16
+        Papa    = 16,
+        Quebec  = 17,
+        Romeo   = 18,
+        Sierra  = 19,
+        Tango   = 21,
+        Uniform = 22,
+        Victor  = 23,
+        Whiskey = 24,
+        Xray    = 25,
+        Yankee  = 26,
+        Zulu    = 27,
+        One     = 28,
+        Two     = 29,
+        Three   = 30,
+        Four    = 31,
+        Five    = 32
     };
 }
 
@@ -122,16 +137,16 @@ int sc_flagSet(int* ptr_i_flag, enumFlag enumFlag_mask01, bool b_state) {
     return 0;
 }
 
-int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01, bool* ptr_b_state) {
+int sc_flagGet(int i_flag, enumFlag enumFlag_mask01, bool* ptr_b_state) {
     if (typeid(enumFlag_mask01) != typeid(enumFlag))
         return -1;
-    *ptr_b_state = ((*i_flag) >> (int(enumFlag_mask01) - 1)) & 0x1;
+    *ptr_b_state = ((i_flag) >> (int(enumFlag_mask01) - 1)) & 0x1;
     return 0;
 }
-int sc_flagGet(int* i_flag, enumFlag enumFlag_mask01) {
+int sc_flagGet(int i_flag, enumFlag enumFlag_mask01) {
     if (typeid(enumFlag_mask01) != typeid(enumFlag))
         return -1;
-    return ((*i_flag) >> (int(enumFlag_mask01) - 1)) & 0x1;
+    return ((i_flag) >> (int(enumFlag_mask01) - 1)) & 0x1;
 }
 
 /*
