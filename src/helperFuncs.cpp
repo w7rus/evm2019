@@ -168,15 +168,10 @@ int sc_commandDecode(int i_value, int* ptr_i_command, int* ptr_i_operand) {
 *
 */
 
-#ifdef _WIN32
-    #include <Windows.h>
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-#endif
 
-#ifdef __linux
-    #include <sys/ioctl.h>
-    #include <termios.h>
-#endif
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <unistd.h>
 
 template<typename T>
 std::string toString(const T& value)
@@ -187,43 +182,19 @@ std::string toString(const T& value)
 }
 
 void mt_getScreenSize(int* width, int* height) {
-    #ifdef _WIN32
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
-        *width = csbi.dwSize.X;
-        *height = csbi.dwSize.Y;
-    #elif __linux
-        struct winsize size;
-        ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
-        *width = size.ws_col - 1;
-        *height = size.ws_row - 1;
-    #endif
+    struct winsize size;
+    ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+    *width = size.ws_col - 1;
+    *height = size.ws_row - 1;
 }
 
-void mt_setCurPos(int _x, int _y, int x, int y) {
-    #ifdef _WIN32
-        COORD pos = {(short)x + (short)_x, (short)y + (short)_y};
-        SetConsoleCursorPosition(hStdOut, pos);
-    #elif __linux
-        std::string esc1 = "\033[";
-        std::string esc2 = toString(y);
-        std::string esc3 = toString(';');
-        std::string esc4 = toString(x);
-        std::string esc5 = toString('H');
-        std::cout << esc1 + esc2 + esc3 + esc4 + esc5;
-    #endif
-}
-
-void mt_getCurPos(int* x, int* y) {
-    #ifdef _WIN32
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
-        *x = csbi.dwCursorPosition.X;
-        *y = csbi.dwCursorPosition.Y;
-        return;
-    #elif __linux
-        return;
-    #endif
+void mt_setCurPos(int x, int y) {
+    std::string esc1 = "\033[";
+    std::string esc2 = toString(y);
+    std::string esc3 = toString(';');
+    std::string esc4 = toString(x);
+    std::string esc5 = toString('H');
+    std::cout << esc1 + esc2 + esc3 + esc4 + esc5;
 }
 
 void mt_setCurFgColor(termClr color, bool bright) {
