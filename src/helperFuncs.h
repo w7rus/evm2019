@@ -18,22 +18,7 @@ namespace RegistryStatusEnumFlags {
         Mike    = 13,
         November= 14,
         Oscar   = 15,
-        Papa    = 16,
-        Quebec  = 17,
-        Romeo   = 18,
-        Sierra  = 19,
-        Tango   = 21,
-        Uniform = 22,
-        Victor  = 23,
-        Whiskey = 24,
-        Xray    = 25,
-        Yankee  = 26,
-        Zulu    = 27,
-        One     = 28,
-        Two     = 29,
-        Three   = 30,
-        Four    = 31,
-        Five    = 32
+        Papa    = 16
     };
 }
 

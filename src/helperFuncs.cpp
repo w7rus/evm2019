@@ -27,22 +27,7 @@ namespace RegistryStatusEnumFlags {
         Mike    = 13,
         November= 14,
         Oscar   = 15,
-        Papa    = 16,
-        Quebec  = 17,
-        Romeo   = 18,
-        Sierra  = 19,
-        Tango   = 21,
-        Uniform = 22,
-        Victor  = 23,
-        Whiskey = 24,
-        Xray    = 25,
-        Yankee  = 26,
-        Zulu    = 27,
-        One     = 28,
-        Two     = 29,
-        Three   = 30,
-        Four    = 31,
-        Five    = 32
+        Papa    = 16
     };
 }
 
@@ -188,13 +173,13 @@ int sc_commandDecode(int i_value, int* ptr_i_command, int* ptr_i_operand) {
 #include <termios.h>
 #include <unistd.h>
 
-template<typename T>
-std::string toString(const T& value)
-{
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
-}
+// template<typename T>
+// std::string toString(const T& value)
+// {
+//     std::ostringstream oss;
+//     oss << value;
+//     return oss.str();
+// }
 
 void mt_getScreenSize(int* width, int* height) {
     struct winsize size;
@@ -205,16 +190,16 @@ void mt_getScreenSize(int* width, int* height) {
 
 void mt_setCurPos(int x, int y) {
     std::string esc1 = "\033[";
-    std::string esc2 = toString(y);
-    std::string esc3 = toString(';');
-    std::string esc4 = toString(x);
-    std::string esc5 = toString('H');
+    std::string esc2 = std::to_string(y);
+    std::string esc3 = ";";
+    std::string esc4 = std::to_string(x);
+    std::string esc5 = "H";
     std::cout << esc1 + esc2 + esc3 + esc4 + esc5;
 }
 
 void mt_setCurFgColor(termClr color, bool bright) {
     std::string esc1 = "\033[";
-    std::string esc2 = toString(color);
+    std::string esc2 = std::to_string(color);
     std::string esc4;
     if (bright) {
         esc4 = ";1";
@@ -227,7 +212,7 @@ void mt_setCurFgColor(termClr color, bool bright) {
 
 void mt_setCurBgColor(termClr color, bool bright) {
     std::string esc1 = "\033[";
-    std::string esc2 = toString(color + 10);
+    std::string esc2 = std::to_string(color + 10);
     std::string esc4;
     if (bright) {
         esc4 = ";1";
