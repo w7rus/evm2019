@@ -7,6 +7,6 @@
 !*.md
 !makefile
 !LICENSE
-src/main\.1\.cpp
 
+src/main\.1\.cpp
 src/conMenu\.1\.cpp

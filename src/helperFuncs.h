@@ -103,4 +103,10 @@ void mt_setCurBgColor(termClr color, bool bright);
 
 void mt_clrscr();
 
+int bc_bitGet(uint32_t i_value, int i_bit);
+
+void bc_printBigChar (uint32_t mask[2], int x, int y);
+
+void bc_printBigString (std::string str, int x, int y);
+
 #endif

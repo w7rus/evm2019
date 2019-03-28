@@ -168,7 +168,6 @@ int sc_commandDecode(int i_value, int* ptr_i_command, int* ptr_i_operand) {
 *
 */
 
-
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -225,6 +224,101 @@ void mt_setCurBgColor(termClr color, bool bright) {
 
 void mt_clrscr() {
     std::cout<<"\033[2J";
+}
+
+uint32_t ZERO[2]    = {0xc3c3ffff, 0xffffc3c3};
+uint32_t ONE[2]     = {0x03030303, 0x03030303};
+uint32_t TWO[2]     = {0xffc0ffff, 0xffff03ff};
+uint32_t THREE[2]   = {0xff03ffff, 0xffff03ff};
+uint32_t FOUR[2]    = {0xff030303, 0xc3c3c3ff};
+uint32_t FIVE[2]    = {0xff03ffff, 0xffffc0ff};
+uint32_t SIX[2]     = {0xffc3ffff, 0xffffc0ff};
+uint32_t SEVEN[2]   = {0x03030303, 0xffff0303};
+uint32_t EIGHT[2]   = {0xffc3ffff, 0xffffc3ff};
+uint32_t NINE[2]    = {0xff03ffff, 0xffffc3ff};
+
+uint32_t PLUS[2]    = {0xff181818, 0x181818ff};
+uint32_t MINUS[2]   = {0xff000000, 0x000000ff};
+
+int bc_bitGet(uint32_t i_value, int i_bit) {
+    return ((i_value) >> (uint32_t(i_bit) - 1)) & 0x1;
+}
+
+void bc_printBigChar (uint32_t mask[2], int x, int y) {
+    mt_setCurPos(x, y);
+
+    int lineCount = 0;
+
+    for (int i = 1; i > -1; i--) {
+        for (int j = 31; j > -1; j--) {
+            if (bc_bitGet(mask[i], j + 1)) {
+                std::cout << "\u2588";
+            } else {
+                std::cout << ' ';
+            }
+
+            if (j % 8 == 0) {
+                lineCount++;
+                mt_setCurPos(x, y + lineCount);
+            }
+        }
+    }
+
+    return;
+}
+
+void bc_printBigString (std::string str, int x, int y) {
+    for (unsigned int i = 0; i < str.length(); i++) {
+        switch (str[i])
+        {
+            case '-':
+                bc_printBigChar(MINUS, x + 9 * i, y);
+                break;
+
+            case '0':
+                bc_printBigChar(ZERO, x + 9 * i, y);
+                break;
+
+            case '1':
+                bc_printBigChar(ONE, x + 9 * i, y);
+                break;
+
+            case '2':
+                bc_printBigChar(TWO, x + 9 * i, y);
+                break;
+
+            case '3':
+                bc_printBigChar(THREE, x + 9 * i, y);
+                break;
+
+            case '4':
+                bc_printBigChar(FOUR, x + 9 * i, y);
+                break;
+
+            case '5':
+                bc_printBigChar(FIVE, x + 9 * i, y);
+                break;
+
+            case '6':
+                bc_printBigChar(SIX, x + 9 * i, y);
+                break;
+
+            case '7':
+                bc_printBigChar(SEVEN, x + 9 * i, y);
+                break;
+
+            case '8':
+                bc_printBigChar(EIGHT, x + 9 * i, y);
+                break;
+
+            case '9':
+                bc_printBigChar(NINE, x + 9 * i, y);
+                break;
+        
+            default:
+                break;
+        }
+    }
 }
 
 #endif
