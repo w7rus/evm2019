@@ -239,12 +239,13 @@ uint32_t NINE[2]    = {0xff03ffff, 0xffffc3ff};
 
 uint32_t PLUS[2]    = {0xff181818, 0x181818ff};
 uint32_t MINUS[2]   = {0xff000000, 0x000000ff};
+uint32_t NONE[2]    = {0x00000000, 0x00000000};
 
 int bc_bitGet(uint32_t i_value, int i_bit) {
     return ((i_value) >> (uint32_t(i_bit) - 1)) & 0x1;
 }
 
-void bc_printBigChar (uint32_t mask[2], int x, int y) {
+void bc_printBigChar(uint32_t mask[2], int x, int y) {
     mt_setCurPos(x, y);
 
     int lineCount = 0;
@@ -267,7 +268,7 @@ void bc_printBigChar (uint32_t mask[2], int x, int y) {
     return;
 }
 
-void bc_printBigString (std::string str, int x, int y) {
+void bc_printBigString(std::string str, int x, int y) {
     for (unsigned int i = 0; i < str.length(); i++) {
         switch (str[i])
         {
@@ -316,8 +317,147 @@ void bc_printBigString (std::string str, int x, int y) {
                 break;
         
             default:
+                bc_printBigChar(NONE, x + 9 * i, y);
                 break;
         }
+    }
+}
+
+int bc_writeBigString(std::string str, char* filepath) {
+    FILE* file = fopen(filepath, "w+b");
+    if (file == NULL)
+        return -1;
+
+    unsigned int str_length = str.length();
+
+    u_int32_t** data = new u_int32_t* [str_length];
+    for (unsigned int i = 0; i < str_length; i++) {
+        data[i] = new u_int32_t[2];
+    }
+
+    for (unsigned int i = 0; i < str_length; i++) {
+        switch (str[i])
+        {
+            case '-':
+                data[i] = MINUS;
+                break;
+
+            case '0':
+                data[i] = ZERO;
+                break;
+
+            case '1':
+                data[i] = ONE;
+                break;
+
+            case '2':
+                data[i] = TWO;
+                break;
+
+            case '3':
+                data[i] = THREE;
+                break;
+
+            case '4':
+                data[i] = FOUR;
+                break;
+
+            case '5':
+                data[i] = FIVE;
+                break;
+
+            case '6':
+                data[i] = SIX;
+                break;
+
+            case '7':
+                data[i] = SEVEN;
+                break;
+
+            case '8':
+                data[i] = EIGHT;
+                break;
+
+            case '9':
+                data[i] = NINE;
+                break;
+        
+            default:
+                data[i] = NONE;
+                break;
+        }
+    }
+
+    for (unsigned int i = 0; i < str_length; i++) {
+        fwrite(data[i], sizeof(uint32_t) * 2, 1, file);
+    }
+
+    fclose(file);
+    return 0;
+}
+
+int bc_readBigString(char* filepath) {
+    FILE* file = fopen(filepath, "rb");
+    if (file == NULL)
+        return -1;
+
+    unsigned int data_length = 0;
+
+    fseek(file, 0, SEEK_END);
+    data_length = ftell(file);
+    rewind(file);
+
+    data_length = data_length / (sizeof(u_int32_t) * 2);
+
+    u_int32_t** data = new u_int32_t* [data_length];
+    for (unsigned int i = 0; i < data_length; i++) {
+        data[i] = new u_int32_t[2];
+    }
+
+    for (unsigned int i = 0; i < data_length; i++) {
+        fread(data[i], sizeof(uint32_t) * 2, 1, file);
+    }
+
+    for (unsigned int i = 0; i < data_length; i++) {
+        std::cout << std::hex << data[i][0] << " " << data[i][1] << std::dec << std::endl;
+    }
+
+    std::cin.get();
+    std::cin.get();
+    std::cin.get();
+    std::cin.get();
+
+    return 0;
+}
+
+void bc_printBox(int x, int y, int width, int height) {
+    width -= 1;
+    height -= 1;
+
+    mt_setCurPos(x, y);
+    std::cout << "\u250C";
+
+    mt_setCurPos(x + width, y);
+    std::cout << "\u2510";
+
+    mt_setCurPos(x, y + height);
+    std::cout << "\u2514";
+
+    mt_setCurPos(x + width, y + height);
+    std::cout << "\u2518";
+
+    for (int i = 0; i < width - 1; i++) {
+        mt_setCurPos(x + i + 1, y);
+        std::cout << "\u2500";
+        mt_setCurPos(x + i + 1, y + height);
+        std::cout << "\u2500";
+    }
+
+    for (int i = 0; i < height - 1; i++) {
+        mt_setCurPos(x, y + i + 1);
+        std::cout << "\u2502";
+        mt_setCurPos(x + width, y + i + 1);
+        std::cout << "\u2502";
     }
 }
 

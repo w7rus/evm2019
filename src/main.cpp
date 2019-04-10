@@ -17,9 +17,9 @@ int main(int argc, char const *argv[]) {
     int evmMemoryOffset = 0;
     int* evmMemory = sc_memoryInit();
     evmMemory[2] = 1488;
-    evmMemory[3] = -228;
-    evmMemory[3] = -87748;
+    evmMemory[3] = 21;
     char evmMemoryDataPath[NAME_MAX] = "./content/db/memoryData.dat";
+    char evmBigCharDataPath[NAME_MAX] = "./content/bigchars.txt";
     int* evmFlag = sc_flagInit();
 
     std::string panelTitle_MEMORY("[MEMORY]");
@@ -89,15 +89,17 @@ int main(int argc, char const *argv[]) {
 
         std::cout << std::left  << std::setw(20) << "[W] Offset++"
                                 << std::setw(20) << "[S] Offset--"
-                                << std::setw(20) << "[A] Unassigned"
-                                << std::setw(20) << "[D] Unassigned"
+                                << std::setw(20) << "[A] Write BC"
+                                << std::setw(20) << "[D] Read BC"
                                 << std::setw(20) << "[E] Unassigned"
                                 << std::setw(20) << "[0] Exit" << std::endl;
+
+        bc_printBox(*panelPosX_STATUS,*panelPosY_STATUS + 5,15,9);
         
         char keyPressed = std::cin.get();
         if (keyPressed == '0') break;
         if (keyPressed == 'a') {
-            
+            bc_writeBigString(evmMemorySelected, evmBigCharDataPath);
         }
         if (keyPressed == 'w') {
             if (evmMemoryOffset < 99) {
@@ -105,8 +107,7 @@ int main(int argc, char const *argv[]) {
             }
         }
         if (keyPressed == 'd') {
-            
-
+            bc_readBigString(evmBigCharDataPath);
         }
         if (keyPressed == 's') {
             if (evmMemoryOffset > 0) {

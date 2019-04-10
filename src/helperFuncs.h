@@ -109,4 +109,10 @@ void bc_printBigChar (uint32_t mask[2], int x, int y);
 
 void bc_printBigString (std::string str, int x, int y);
 
+int bc_writeBigString (std::string str, char* filepath);
+
+int bc_readBigString (char* filepath);
+
+void bc_printBox(int x, int y, int width, int height);
+
 #endif
