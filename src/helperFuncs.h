@@ -115,4 +115,14 @@ int bc_readBigString (char* filepath);
 
 void bc_printBox(int x, int y, int width, int height);
 
+/*
+*
+*   Key system
+*
+*/
+
+void rk_bufMode(bool value);
+
+void rk_readkey(int * key, char * escape);
+
 #endif

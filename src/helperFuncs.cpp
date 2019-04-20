@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <termios.h>
 
 namespace RegistryStatusEnumFlags {
     enum enumFlag {
@@ -422,11 +423,6 @@ int bc_readBigString(char* filepath) {
         std::cout << std::hex << data[i][0] << " " << data[i][1] << std::dec << std::endl;
     }
 
-    std::cin.get();
-    std::cin.get();
-    std::cin.get();
-    std::cin.get();
-
     return 0;
 }
 
@@ -459,6 +455,37 @@ void bc_printBox(int x, int y, int width, int height) {
         mt_setCurPos(x + width, y + i + 1);
         std::cout << "\u2502";
     }
+}
+
+/*
+*
+*   Key system
+*
+*/
+
+static struct termios t;
+
+void rk_bufMode(bool value) {
+    if (value) {
+        tcgetattr(STDIN_FILENO, &t);
+        t.c_lflag &= ~ICANON;
+        t.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+    } else {
+        tcgetattr(STDIN_FILENO, &t);
+        t.c_lflag |= ICANON;
+        t.c_lflag |= ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+    }
+}
+
+void rk_readkey(int * key, char * escape) {
+    rk_bufMode(true);
+    *key = std::getchar();
+    if (*key == 126) {
+        read(0, escape, 6);
+    }
+    rk_bufMode(false);
 }
 
 #endif
