@@ -125,4 +125,12 @@ void rk_bufMode(bool value);
 
 void rk_readkey(int * key, char * escape);
 
+/*
+*
+*   Script system
+*
+*/
+
+int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven);
+
 #endif
