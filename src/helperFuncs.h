@@ -56,9 +56,9 @@ int sc_memoryGet(int* arr_i_array01, int i_address, int* i_value);
 int sc_memoryGet(int* arr_i_array01, int i_address);
 
 //Save EVM memory data to a file by path
-int sc_memorySave(char* arr_c_path, int* arr_i_array01);
+int sc_memorySave(std::string arr_c_path, int* arr_i_array01);
 //Load EVM memory data from file by path
-int sc_memoryLoad(char* arr_c_path, int* ptr_arr_i_array01);
+int sc_memoryLoad(std::string arr_c_path, int* ptr_arr_i_array01);
 
 /*
 *
@@ -109,9 +109,9 @@ void bc_printBigChar (uint32_t mask[2], int x, int y);
 
 void bc_printBigString (std::string str, int x, int y);
 
-int bc_writeBigString (std::string str, char* filepath);
+int bc_writeBigString (std::string str, std::string filepath);
 
-int bc_readBigString (char* filepath);
+int bc_readBigString (std::string filepath);
 
 void bc_printBox(int x, int y, int width, int height);
 
@@ -131,6 +131,6 @@ void rk_readkey(int * key, char * escape);
 *
 */
 
-int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven);
+int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode);
 
 #endif

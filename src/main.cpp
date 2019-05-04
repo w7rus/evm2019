@@ -1,18 +1,14 @@
-#include <cstdlib>
-#include <cstdio>
-#include <new>
+#include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <cmath>
 #include <limits.h>
 #include <algorithm>
-#include <stdio.h>
 #include <signal.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <cstring>
-#include <fstream>
+#include <cmath>
 #include "helperFuncs.h"
 
 using namespace RegistryStatusEnumFlags;
@@ -26,19 +22,56 @@ void signalhandler(int signum) {
 
 int main(int argc, char const *argv[]) {
     bool evmScriptMode = false;
-
-    for (int i = 0; i < argc; ++i) {
-        if (strcmp(argv[i], "-runscript") == 0) {
-            evmScriptMode = true;
-        }
-    }
-
+    int evmScriptType = 0;
     register int accumulator = 0;
     int evmMemoryOffset = 0;
     int* evmMemory = sc_memoryInit();
-    char evmMemoryDataPath[NAME_MAX] = "./content/db/memoryData.dat";
-    char evmBigCharDataPath[NAME_MAX] = "./content/bigchars.txt";
+    std::string evmMemoryDataPath = "./content/db/memoryData.dat";
+    std::string evmBigCharDataPath = "./content/db/bcData.dat";
+    std::string evmRawScriptFilePath = "./content/script.rsf";
+    std::string evmBinaryScriptFilePath = "./content/script.bsf";
     int* evmFlag = sc_flagInit();
+
+    for (int i = 1; i < argc; ++i) {
+        std::string _argv(argv[i], strlen(argv[i]));
+
+        std::size_t argv_split = _argv.find("=");
+
+        std::string argv_param;
+        std::string argv_value;
+
+        if (argv_split == std::string::npos) {
+            argv_param = _argv;
+        } else {
+            std::string argv_param = _argv.substr (0, argv_split);
+            std::string argv_value = _argv.substr (++argv_split);
+        }
+
+        if (argv_param.compare("-rsf") == 0) {
+            evmScriptMode = true;
+            evmScriptType = 0;
+            if (!argv_value.empty())
+                evmRawScriptFilePath = argv_value;
+        }
+
+        if (argv_param.compare("-bsf") == 0) {
+            evmScriptMode = true;
+            evmScriptType = 1;
+            if (!argv_value.empty())
+                evmBinaryScriptFilePath = argv_value;
+        }
+
+        if (argv_param.compare("-bcf") == 0) {
+            if (!argv_value.empty())
+                evmBigCharDataPath = argv_value;
+        }
+
+        if (argv_param.compare("-mf") == 0) {
+            if (!argv_value.empty())
+                evmMemoryDataPath = argv_value;
+        }
+    }
+
 
     bool resValOverflow = false;
     bool resValEven = false;
@@ -57,7 +90,7 @@ int main(int argc, char const *argv[]) {
     std::ifstream scriptFile;
 
     if (evmScriptMode) {
-        scriptFile.open("./content/script.txt");
+        scriptFile.open(evmRawScriptFilePath);
         signal(SIGALRM, signalhandler);
         setitimer(ITIMER_REAL, &nval, NULL);
     }
@@ -150,10 +183,16 @@ int main(int argc, char const *argv[]) {
                 std::cout << "End of script file! Press any key to continue..." << std::endl;
                 std::cin.get();
                 evmScriptMode = false;
+                opcounter--;
             } else {
-                ALU(scriptFileLine, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven);
+                if (!evmScriptType) {
+                    ALU(scriptFileLine, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
+                } else {
+                    evmScriptMode = false;
+                    continue;
+                }
+                setitimer(ITIMER_REAL, &nval, NULL);
             }
-            setitimer(ITIMER_REAL, &nval, NULL);
         } else {
             std::cout << std::endl << "> ";
             int keyPressed;
@@ -163,10 +202,10 @@ int main(int argc, char const *argv[]) {
             if (keyPressed == '0') break;
 
             if (keyPressed == 'w') {
-                bc_writeBigString(evmMemorySelected, evmBigCharDataPath);
+                bc_writeBigString(evmMemorySelected, evmBigCharDataPath.c_str());
             }
             if (keyPressed == 'r') {
-                bc_readBigString(evmBigCharDataPath);
+                bc_readBigString(evmBigCharDataPath.c_str());
                 std::cin.get();
             }
             if (keyPressed == 'l') {
@@ -202,7 +241,7 @@ int main(int argc, char const *argv[]) {
                 if (str_sequence.empty()) {
                     std::cout << "Unresolved sequence!" << std::endl;
                 } else {
-                    ALU(str_sequence, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven);
+                    ALU(str_sequence, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
                 }
             }
 
