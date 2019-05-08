@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <termios.h>
+#include <variant>
 
 namespace RegistryStatusEnumFlags {
     enum enumFlag {
@@ -588,6 +589,10 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
         ss >> command >> offset >> value;
     }
 
+    if (offset > 100) {
+        return 1;
+    }
+
     if(command == 10) { //READ
         std::cout << "[0x" << std::hex << offset << ']' << std::dec << evmMemory[offset] << std::endl;
         std::cin.get();
@@ -605,7 +610,7 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
 
     if(command == 30) { //ADD
         *accumulator = *accumulator + evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
+        if (*accumulator < 9999 && *accumulator > -9999) {
             *resValOverflow = false;
         } else {
             *resValOverflow = true;
@@ -619,7 +624,7 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
     }
     if(command == 31) { //SUB
         *accumulator = *accumulator - evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
+        if (*accumulator < 9999 && *accumulator > -9999) {
             *resValOverflow = false;
         } else {
             *resValOverflow = true;
@@ -633,7 +638,7 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
     }
     if(command == 32) { //MUL
         *accumulator = *accumulator * evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
+        if (*accumulator < 9999 && *accumulator > -9999) {
             *resValOverflow = false;
         } else {
             *resValOverflow = true;
@@ -647,7 +652,7 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
     }
     if(command == 33) { //DIV
         *accumulator = *accumulator / evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
+        if (*accumulator < 9999 && *accumulator > -9999) {
             *resValOverflow = false;
         } else {
             *resValOverflow = true;
@@ -661,15 +666,15 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
     }
 
     if(command == 40) { //JUMP
-        *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+        *evmMemoryOffset = offset;
     }
     if(command == 41) { //JNEG
         if (*accumulator < 0)
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 42) { //JZ
         if (*accumulator == 0)
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 43) { //HALT
         return -1;
@@ -722,23 +727,23 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
     }
     if(command == 54) { //JNS
         if (*accumulator > 0)
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 56) { //JC
         if (*resValOverflow)
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 57) { //JNC
         if (!(*resValOverflow))
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 58) { //JP
         if (*resValEven)
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
     if(command == 59) { //JNP
         if (!(*resValEven))
-            *evmMemoryOffset = std::stoi(str_sequence.substr(3, 2));
+            *evmMemoryOffset = offset;
     }
 
     if(command == 60) { //CHL
@@ -933,59 +938,103 @@ int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * 
 *
 */
 
-struct tCHS {
+typedef struct {
     unsigned int addr:20;
-};
+} tCHS;
 
-struct tLARGE {
+typedef struct {
     unsigned int addr:24;
-};
+} tLARGE;
 
-struct tIDECHS {
+typedef struct {
     unsigned int addr:28;
-};
+} tIDECHS;
 
-struct tLBA {
+typedef struct {
     unsigned int addr:32;
+} tLBA;
+
+union U
+{
+    tCHS tchs;
+    tLARGE tlarge;
+    tIDECHS tidechs;
+    tLBA tlba;
 };
 
-int g_chs2idechs(tCHS, tIDECHS *) {
+int g_chs2idechs(tCHS a, tIDECHS * b) {
+    U u;
+    u.tchs = a;
+    *b = u.tidechs;
     return 0;
 }
-int g_chs2large(tCHS, tLARGE *) {
+int g_chs2large(tCHS a, tLARGE * b) {
+    U u;
+    u.tchs = a;
+    *b = u.tlarge;
     return 0;
 }
-int g_chs2lba(tCHS, tLBA *) {
-    return 0;
-}
-
-int g_idechs2chs(tIDECHS, tCHS *) {
-    return 0;
-}
-int g_idechs2large(tIDECHS, tLARGE *) {
-    return 0;
-}
-int g_idechs2lba(tIDECHS, tLBA *) {
-    return 0;
-}
-
-int g_large2chs(tLARGE, tCHS *) {
-    return 0;
-}
-int g_large2idechs(tLARGE, tIDECHS *) {
-    return 0;
-}
-int g_large2lba(tLARGE, tLBA *) {
+int g_chs2lba(tCHS a, tLBA * b) {
+    U u;
+    u.tchs = a;
+    *b = u.tlba;
     return 0;
 }
 
-int g_lba2chs(tLBA, tCHS *) {
+int g_idechs2chs(tIDECHS a, tCHS * b) {
+    U u;
+    u.tidechs = a;
+    *b = u.tchs;
     return 0;
 }
-int g_lba2idechs(tLBA, tIDECHS *) {
+int g_idechs2large(tIDECHS a, tLARGE * b) {
+    U u;
+    u.tidechs = a;
+    *b = u.tlarge;
     return 0;
 }
-int g_lba2large(tLBA, tLARGE *) {
+int g_idechs2lba(tIDECHS a, tLBA * b) {
+    U u;
+    u.tidechs = a;
+    *b = u.tlba;
+    return 0;
+}
+
+int g_large2chs(tLARGE a, tCHS * b) {
+    U u;
+    u.tlarge = a;
+    *b = u.tchs;
+    return 0;
+}
+int g_large2idechs(tLARGE a, tIDECHS * b) {
+    U u;
+    u.tlarge = a;
+    *b = u.tidechs;
+    return 0;
+}
+int g_large2lba(tLARGE a, tLBA * b) {
+    U u;
+    u.tlarge = a;
+    *b = u.tlba;
+    return 0;
+}
+
+int g_lba2chs(tLBA a, tCHS * b) {
+    U u;
+    u.tlba = a;
+    *b = u.tchs;
+    return 0;
+}
+int g_lba2idechs(tLBA a, tIDECHS * b) {
+    U u;
+    u.tlba = a;
+    *b = u.tidechs;
+    return 0;
+}
+int g_lba2large(tLBA a, tLARGE * b) {
+    U u;
+    u.tlba = a;
+    *b = u.tlarge;
     return 0;
 }
 

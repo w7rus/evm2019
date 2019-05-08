@@ -72,7 +72,6 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-
     bool resValOverflow = false;
     bool resValEven = false;
 
@@ -96,6 +95,10 @@ int main(int argc, char const *argv[]) {
     }
 
     while (1) {
+        if (sc_flagGet(*evmFlag, enumFlag::Alpha)) {
+            return 0;
+        }
+
         int* conWidth = new int;
         int* conHeight = new int;
         mt_getScreenSize(conWidth, conHeight);
@@ -172,7 +175,8 @@ int main(int argc, char const *argv[]) {
             std::cout << std::endl;
             mt_setCurPos(*panelPosX_STATUS - 18, *panelPosY_SELECTED + 17);
             std::cout << "EVM RUNNING IN SCRIPT EXECUTION MODE";
-            mt_setCurPos(*panelPosX_STATUS - 10, *panelPosY_SELECTED + 18);
+            mt_setCurPos(*panelPosX_STATUS - 14, *panelPosY_SELECTED + 18);
+            std::cout << "USERINPUT IS NOT REGISTERED";
             std::cout << std::endl;
             pause();
 
@@ -186,7 +190,26 @@ int main(int argc, char const *argv[]) {
                 opcounter--;
             } else {
                 if (!evmScriptType) {
-                    ALU(scriptFileLine, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
+                    int alures = ALU(scriptFileLine, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
+
+                    if (alures == -1) {
+                        evmScriptMode = false;
+                        opcounter--;
+                    } else if (alures == 1) {
+                        sc_flagSet(evmFlag, enumFlag::Alpha, true);
+                    }
+
+                    if (resValEven) {
+                        sc_flagSet(evmFlag, enumFlag::Bravo, true);
+                    } else {
+                        sc_flagSet(evmFlag, enumFlag::Bravo, false);
+                    }
+
+                    if (resValOverflow) {
+                        sc_flagSet(evmFlag, enumFlag::Charlie, true);
+                    } else {
+                        sc_flagSet(evmFlag, enumFlag::Charlie, false);
+                    }
                 } else {
                     evmScriptMode = false;
                     continue;
@@ -241,7 +264,25 @@ int main(int argc, char const *argv[]) {
                 if (str_sequence.empty()) {
                     std::cout << "Unresolved sequence!" << std::endl;
                 } else {
-                    ALU(str_sequence, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
+                    int alures = ALU(str_sequence, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
+                    
+                    if (alures == -1) {
+                        evmScriptMode = false;
+                    } else if (alures == 1) {
+                        sc_flagSet(evmFlag, enumFlag::Alpha, true);
+                    }
+
+                    if (resValEven) {
+                        sc_flagSet(evmFlag, enumFlag::Bravo, true);
+                    } else {
+                        sc_flagSet(evmFlag, enumFlag::Bravo, false);
+                    }
+
+                    if (resValOverflow) {
+                        sc_flagSet(evmFlag, enumFlag::Charlie, true);
+                    } else {
+                        sc_flagSet(evmFlag, enumFlag::Charlie, false);
+                    }
                 }
             }
 
@@ -283,5 +324,5 @@ int main(int argc, char const *argv[]) {
     // std::cout << "Command: " << *command << std::endl;
     // std::cout << "Operand: " << *operand << std::endl;
 
-    // return 0;
+    return 0;
 }
