@@ -132,5 +132,6 @@ void rk_readkey(int * key, char * escape);
 */
 
 int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode);
+int ALUB(int command, int offset, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode);
 
 #endif
