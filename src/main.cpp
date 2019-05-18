@@ -104,6 +104,7 @@ int main(int argc, char const *argv[]) {
 
     while (1) {
         if (sc_flagGet(*evmFlag, enumFlag::Alpha)) {
+            std::cout << "There was an critial error processing user/script sequence! App will exit..." << std::endl;
             return 0;
         }
 
@@ -175,6 +176,7 @@ int main(int argc, char const *argv[]) {
                                 << std::setw(20) << "[w] Write BC"
                                 << std::setw(20) << "[r] Read BC"
                                 << std::setw(20) << "[f5] Call Func"
+                                << std::setw(20) << "[f6] Compile RSF"
                                 << std::setw(20) << "[q] Reset EVM"
                                 << std::setw(20) << "[0] Exit EVM" << std::endl;
 
@@ -188,6 +190,7 @@ int main(int argc, char const *argv[]) {
             std::cout << std::endl;
             pause();
 
+                                                                                // Reading RawScriptFile
             if (!evmScriptType) {
                 std::string scriptFileLine;
                 std::getline(scriptFile, scriptFileLine);
@@ -203,8 +206,12 @@ int main(int argc, char const *argv[]) {
                 int alures = ALU(scriptFileLine, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
 
                 if (alures == -1) {
+                    mt_setCurPos(0, *panelPosY_SELECTED + 21);
+                    std::cout << "Received HALT command! Press any key to continue..." << std::endl;
+                    std::cin.get();
                     evmScriptMode = false;
                     opcounter--;
+                    continue;
                 } else if (alures == 1) {
                     sc_flagSet(evmFlag, enumFlag::Alpha, true);
                 }
@@ -220,7 +227,7 @@ int main(int argc, char const *argv[]) {
                 } else {
                     sc_flagSet(evmFlag, enumFlag::Charlie, false);
                 }
-            } else {
+            } else {                                                            // Reading BinaryScriptFile
                 int value = 0;
                 fread(&value, sizeof(int), 1, scriptFileBinary);
 
@@ -231,8 +238,12 @@ int main(int argc, char const *argv[]) {
                 int alures = ALUB(command, offset, evmMemory, &evmMemoryOffset, &accumulator, &resValOverflow, &resValEven, evmScriptMode);
 
                 if (alures == -1) {
+                    mt_setCurPos(0, *panelPosY_SELECTED + 21);
+                    std::cout << "Received HALT command! Press any key to continue..." << std::endl;
+                    std::cin.get();
                     evmScriptMode = false;
                     opcounter--;
+                    continue;
                 } else if (alures == 1) {
                     sc_flagSet(evmFlag, enumFlag::Alpha, true);
                 }
@@ -265,42 +276,43 @@ int main(int argc, char const *argv[]) {
             char * keyEscape = new char[6];
             rk_readkey(&keyPressed, keyEscape);
 
-            if (keyPressed == '0') break;
+            if (keyPressed == '0') break;                                       // Exit EVM
 
-            if (keyPressed == 'w') {
+            if (keyPressed == 'w') {                                            // Write BigChars mask
                 bc_writeBigString(evmMemorySelected, evmBigCharDataPath.c_str());
             }
-            if (keyPressed == 'r') {
+            if (keyPressed == 'r') {                                            // Read BigChars mask
                 bc_readBigString(evmBigCharDataPath.c_str());
                 std::cin.get();
             }
-            if (keyPressed == 'l') {
+            if (keyPressed == 'l') {                                            // Load memory from file
                 sc_memoryLoad(evmMemoryDataPath, evmMemory);
             }
-            if (keyPressed == 's') {
+            if (keyPressed == 's') {                                            // Save memory to file
                 sc_memorySave(evmMemoryDataPath, evmMemory);
             }
-            if (keyPressed == '-') {
+            if (keyPressed == '-') {                                            // Scroll selection back
                 if (evmMemoryOffset > 0) {
                     evmMemoryOffset--;
                 }
             }
-            if (keyPressed == '+') {
+            if (keyPressed == '+') {                                            // Scroll selection forward
                 if (evmMemoryOffset < 99) {
                     evmMemoryOffset++;
                 }
             }
 
-            if (keyPressed == 'q') {
+            if (keyPressed == 'q') {                                            // Reset EVM
                 evmMemoryOffset = 0;
                 delete(evmMemory);
                 evmMemory = sc_memoryInit();
                 delete(evmFlag);
                 evmFlag = sc_flagInit();
+                opcounter = 0;
                 accumulator = 0;
             }
 
-            if (keyEscape[2] == '1' && keyEscape[3] == '5') {
+            if (keyEscape[2] == '1' && keyEscape[3] == '5') {                   // Execute sequence
                 std::string str_sequence;
                 std::cout << "Enter sequence: ";
                 std::getline(std::cin, str_sequence);
@@ -329,7 +341,7 @@ int main(int argc, char const *argv[]) {
                 }
             }
 
-            if (keyEscape[2] == '1' && keyEscape[3] == '7') {
+            if (keyEscape[2] == '1' && keyEscape[3] == '7') {                   // Translate RawScriptFile to BinaryScriptFile
                 std::string str_filepath_in;
                 std::cout << "Enter path to RSF: ";
                 std::getline(std::cin, str_filepath_in);
@@ -354,7 +366,8 @@ int main(int argc, char const *argv[]) {
 
                         if (str_fileline_in.empty())
                         {
-                            std::cout << "Done (RSF -> BSF)!" << std::endl;
+                            std::cout << "Done! Press any key to continue..." << std::endl;
+                            std::cin.get();
                             break;
                         } else {
 
@@ -458,13 +471,6 @@ int main(int argc, char const *argv[]) {
                             sc_commandEncode(command, offset, &value);
 
                             fwrite(&value, sizeof(int), 1, file_out);
-
-                            std::cout << str_fileline_in << std::endl;
-                            std::cout << command << std::endl;
-                            std::cout << offset << std::endl;
-                            std::cout << value << std::endl;
-                            std::cin.get();
-                            std::cin.get();
                         }
                     }
 
@@ -475,37 +481,6 @@ int main(int argc, char const *argv[]) {
             }
         }
     }
-
-    // int* evmFlag = sc_flagInit();
-
-    // std::cout << "Printing evmFlag::Alpha" << std::endl;
-    // std::cout << "(" << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Alpha) << ")" << std::endl;
-
-    // std::cout << "Editing evmFlag::Alpha" << std::endl;
-    // sc_flagSet(evmFlag, RegistryStatusEnumFlags::Alpha, true);
-
-    // std::cout << "Printing evmFlag::Alpha" << std::endl;
-    // std::cout << "(" << sc_flagGet(evmFlag, RegistryStatusEnumFlags::Alpha) << ")" << std::endl;
-
-    // std::cout << std::endl;
-
-    // int* value = new (std::nothrow) int;
-    // *value = 0;
-
-    // std::cout << "Encoding Value" << std::endl;
-    // sc_commandEncode(10, 127, value);
-
-    // std::cout << *value << std::endl;
-
-    // int* command = new (std::nothrow) int;
-    // *command = 0;
-    // int* operand = new (std::nothrow) int;
-    // *operand = 0;
-
-    // std::cout << "Decoding Value" << std::endl;
-    // sc_commandDecode(*value, command, operand);
-    // std::cout << "Command: " << *command << std::endl;
-    // std::cout << "Operand: " << *operand << std::endl;
 
     return 0;
 }
