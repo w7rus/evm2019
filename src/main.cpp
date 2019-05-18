@@ -225,7 +225,7 @@ int main(int argc, char const *argv[]) {
             EVM_TERM.panel_EVMSTATUS_PositionX,
             EVM_TERM.panel_EVMSTATUS_PositionY + 4
             );
-        std::cout << std::setw(EVM_LABELS.label_EVMFLAGS.size() + 2) << 
+        std::cout << std::setw(EVM_LABELS.label_EVMFLAGS.size() + 3) << 
             sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Alpha) << " " <<
             sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Bravo) << " " <<
             sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Charlie) << " " <<
@@ -306,7 +306,7 @@ int main(int argc, char const *argv[]) {
             pause();                                                            // Break on SIGALRM
 
             /* ALU HERE */
-            evmMemoryOffset = opcounter - 1;
+            evmMemoryOffset = opcounter;
 
             int cmd = 0;
             int val = 0;
@@ -608,6 +608,8 @@ int main(int argc, char const *argv[]) {
             else if (keyEscape[2] == '1' && keyEscape[3] == '8')                // Key F7
             {
                 //COMPILE SIMPLEBASIC INTO SIMPLEASSEMBLY
+
+                
             }
             else if (keyEscape[2] == '1' && keyEscape[3] == '9')                // Key F8
             {
