@@ -178,14 +178,14 @@ int sc_commandDecode(int i_value, int* ptr_i_command, int* ptr_i_operand) {
 //     return oss.str();
 // }
 
-void mt_getScreenSize(int* width, int* height) {
+void mt_getScreenSize(size_t* width, size_t* height) {
     struct winsize size;
     ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
     *width = size.ws_col - 1;
     *height = size.ws_row - 1;
 }
 
-void mt_setCurPos(int x, int y) {
+void mt_setCurPos(size_t x, size_t y) {
     std::string esc1 = "\033[";
     std::string esc2 = std::to_string(y);
     std::string esc3 = ";";
@@ -243,7 +243,7 @@ int bc_bitGet(uint32_t i_value, int i_bit) {
     return ((i_value) >> (uint32_t(i_bit) - 1)) & 0x1;
 }
 
-void bc_printBigChar(uint32_t mask[2], int x, int y) {
+void bc_printBigChar(uint32_t mask[2], size_t x, size_t y) {
     mt_setCurPos(x, y);
 
     int lineCount = 0;
@@ -266,7 +266,7 @@ void bc_printBigChar(uint32_t mask[2], int x, int y) {
     return;
 }
 
-void bc_printBigString(std::string str, int x, int y) {
+void bc_printBigString(std::string str, size_t x, size_t y) {
     for (unsigned int i = 0; i < str.length(); i++) {
         switch (str[i])
         {
@@ -423,7 +423,7 @@ int bc_readBigString(std::string filepath) {
     return 0;
 }
 
-void bc_printBox(int x, int y, int width, int height) {
+void bc_printBox(size_t x, size_t y, size_t width, size_t height) {
     width -= 1;
     height -= 1;
 
@@ -439,14 +439,14 @@ void bc_printBox(int x, int y, int width, int height) {
     mt_setCurPos(x + width, y + height);
     std::cout << "\u2518";
 
-    for (int i = 0; i < width - 1; i++) {
+    for (size_t i = 0; i < width - 1; i++) {
         mt_setCurPos(x + i + 1, y);
         std::cout << "\u2500";
         mt_setCurPos(x + i + 1, y + height);
         std::cout << "\u2500";
     }
 
-    for (int i = 0; i < height - 1; i++) {
+    for (size_t i = 0; i < height - 1; i++) {
         mt_setCurPos(x, y + i + 1);
         std::cout << "\u2502";
         mt_setCurPos(x + width, y + i + 1);
@@ -491,788 +491,157 @@ void rk_readkey(int * key, char * escape) {
 *
 */
 
-int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode) {
-    std::stringstream ss;
-    ss << str_sequence;
-    int command = 0;
-    int offset = 0;
-    int value = 0;
+int ALU(int cmd, int val, int* evmMemory, int* evmFlag, int* accumulator, int* evmMemoryOffset)
+{
+    if (val > 99) {
+        return -1;
+    }
 
-    if (evmScriptMode) {
-        std::string commandAlias;
-        ss >> commandAlias;
+    switch (cmd)
+    {
+    case 10:    //READ
+        {
+            std::cout << "evmMemory[" << val << "]: " << std::hex << evmMemory[val] << std::dec << std::endl;
+            return 1;
+        }
+        break;
+    case 11:    //WRITE
+        {
+            int new_val = 0;
+            std::cout << "Write value to: " << "evmMemory[" << val << "]: ";
+            std::cin >> new_val;
+            evmMemory[val] = new_val;
+        }
+        break;
+    case 20:    //LOAD
+        *accumulator = evmMemory[val];
+        break;
+    case 21:    //SAVE
+        evmMemory[val] = *accumulator;
+        break;
+    case 30:    //ADD
+        *accumulator = *accumulator + evmMemory[val];
+        break;
+    case 31:    //SUB
+        *accumulator = *accumulator - evmMemory[val];
+        break;
+    case 32:    //MUL
+        *accumulator = *accumulator * evmMemory[val];
+        break;
+    case 33:    //DIV
+        *accumulator = *accumulator / evmMemory[val];
+        break;
+    case 40:    //JUMP
+        *evmMemoryOffset = val;
+        break;
+    case 41:    //JNEG
+        if (*accumulator < 0)
+            *evmMemoryOffset = val;
+        break;
+    case 42:    //JZ
+        if (*accumulator == 0)
+            *evmMemoryOffset = val;
+        break;
+    case 43:    //HALT
+        return 1;
+        break;
+    case 51:    //NOT
+        evmMemory[val] = ~(*accumulator);
+        break;
+    case 52:    //AND
+        *accumulator &= evmMemory[val];
+        break;
+    case 53:    //OR
+        *accumulator |= evmMemory[val];
+        break;
+    case 54:    //XOR
+        *accumulator ^= evmMemory[val];
+        break;
+    case 55:    //JNS
+        if (*accumulator > 0)
+            *evmMemoryOffset = val;
+        break;
+    case 56:    //JC
+        if (sc_flagGet(*evmFlag, enumFlag::Charlie))
+            *evmMemoryOffset = val;
+        break;
+    case 57:    //JNC
+        if (!sc_flagGet(*evmFlag, enumFlag::Charlie))
+            *evmMemoryOffset = val;
+        break;
+    case 58:    //JP
+        if (sc_flagGet(*evmFlag, enumFlag::Bravo))
+            *evmMemoryOffset = val;
+        break;
+    case 59:    //JNP
+        if (!sc_flagGet(*evmFlag, enumFlag::Bravo))
+            *evmMemoryOffset = val;
+        break;
+    case 60:    //CHL
+        *accumulator = evmMemory[val] << 1;
+        break;
+    case 61:    //SHR
+        *accumulator = evmMemory[val] >> 1;
+        break;
+    case 62:    //RCL
+        *accumulator = (evmMemory[val] << 1) | (evmMemory[val] >> (32 - 1));
+        break;
+    case 63:    //RCR
+        *accumulator = (evmMemory[val] >> 1) | (evmMemory[val] << (32 - 1));
+        break;
+    case 64:    //NEG
+        *accumulator = -evmMemory[val];
+        break;
+    case 65:    //ADDC
+        *accumulator = evmMemory[val] + evmMemory[*accumulator];
+        break;
+    case 66:    //SUBC
+        *accumulator = evmMemory[val] - evmMemory[*accumulator];
+        break;
+    case 67:    //LOGLC
+        *accumulator = evmMemory[val] << *accumulator;
+        break;
+    case 68:    //LOGRC
+        *accumulator = evmMemory[val] >> *accumulator;
+        break;
+    case 69:    //RCCL
+        *accumulator = (evmMemory[val] << *accumulator) | (evmMemory[val] >> (32 - *accumulator));
+        break;
+    case 70:    //RCCR
+        *accumulator = (evmMemory[val] >> *accumulator) | (evmMemory[val] << (32 - *accumulator));
+        break;
+    case 71:    //MOVA
+        evmMemory[*accumulator] = evmMemory[val];
+        break;
+    case 72:    //MOVR
+        evmMemory[val] = evmMemory[*accumulator];
+        break;
+    case 73:    //MOVCA
+        evmMemory[evmMemory[*accumulator]] = evmMemory[val];
+        break;
+    case 74:    //MOVCR
+        evmMemory[evmMemory[*accumulator]] = evmMemory[val];
+        break;
+    case 75:    //MADDC
+        *accumulator = evmMemory[val] + evmMemory[evmMemory[*accumulator]];
+        break;
+    case 76:    //MSUBC
+        *accumulator = evmMemory[val] - evmMemory[evmMemory[*accumulator]];
+        break;
+    
+    default:
+        break;
+    }
 
-        if (commandAlias.compare("READ") == 0)
-            command = 10;
-        if (commandAlias.compare("WRITE") == 0)
-            command = 11;
+    if (*accumulator > 32767 || *accumulator < -32768)
+    {
+        sc_flagSet(evmFlag, enumFlag::Charlie, true);
+    }
 
-        if (commandAlias.compare("LOAD") == 0)
-            command = 20;
-        if (commandAlias.compare("SAVE") == 0)
-            command = 21;
-            
-        if (commandAlias.compare("ADD") == 0)
-            command = 30;
-        if (commandAlias.compare("SUB") == 0)
-            command = 31;
-        if (commandAlias.compare("MUL") == 0)
-            command = 32;
-        if (commandAlias.compare("DIV") == 0)
-            command = 33;
-
-        if (commandAlias.compare("JUMP") == 0)
-            command = 40;
-        if (commandAlias.compare("JNEG") == 0)
-            command = 41;
-        if (commandAlias.compare("JZ") == 0)
-            command = 42;
-        if (commandAlias.compare("HALT") == 0)
-            command = 43;
-
-        if (commandAlias.compare("NOT") == 0)
-            command = 50;
-        if (commandAlias.compare("AND") == 0)
-            command = 51;
-        if (commandAlias.compare("OR") == 0)
-            command = 52;
-        if (commandAlias.compare("XOR") == 0)
-            command = 53;
-        if (commandAlias.compare("JNS") == 0)
-            command = 54;
-        if (commandAlias.compare("JC") == 0)
-            command = 56;
-        if (commandAlias.compare("JNC") == 0)
-            command = 57;
-        if (commandAlias.compare("JP") == 0)
-            command = 58;
-        if (commandAlias.compare("JNP") == 0)
-            command = 59;
-
-        if (commandAlias.compare("CHL") == 0)
-            command = 60;
-        if (commandAlias.compare("SHR") == 0)
-            command = 61;
-        if (commandAlias.compare("RCL") == 0)
-            command = 62;
-        if (commandAlias.compare("RCR") == 0)
-            command = 63;
-        if (commandAlias.compare("ADDC") == 0)
-            command = 65;
-        if (commandAlias.compare("SUBC") == 0)
-            command = 66;
-        if (commandAlias.compare("LOGLC") == 0)
-            command = 67;
-        if (commandAlias.compare("LOGRC") == 0)
-            command = 68;
-        if (commandAlias.compare("RCCL") == 0)
-            command = 69;
-        if (commandAlias.compare("RCCR") == 0)
-            command = 70;
-
-        if (commandAlias.compare("MOVA") == 0)
-            command = 71;
-        if (commandAlias.compare("MOVR") == 0)
-            command = 72;
-        if (commandAlias.compare("MOVCA") == 0)
-            command = 73;
-        if (commandAlias.compare("MOVCR") == 0)
-            command = 74;
-
-        if (commandAlias.compare("MADDC") == 0)
-            command = 75;
-        if (commandAlias.compare("MSUBC") == 0)
-            command = 76;
-
-        ss >> offset >> value;
+    if (*accumulator % 2 == 0) {
+        sc_flagSet(evmFlag, enumFlag::Bravo, true);
     } else {
-        ss >> command >> offset >> value;
-    }
-
-    if (offset > 100) {
-        return 1;
-    }
-
-    if(command == 10) { //READ
-        std::cout << "[0x" << std::hex << offset << ']' << std::dec << evmMemory[offset] << std::endl;
-    }
-    if(command == 11) { //WRITE
-        evmMemory[offset] = value;
-    }
-
-    if(command == 20) { //LOAD
-        *accumulator = evmMemory[offset];
-    }
-    if(command == 21) { //SAVE
-        evmMemory[offset] = *accumulator;
-    }
-
-    if(command == 30) { //ADD
-        *accumulator = *accumulator + evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 31) { //SUB
-        *accumulator = *accumulator - evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 32) { //MUL
-        *accumulator = *accumulator * evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 33) { //DIV
-        *accumulator = *accumulator / evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-
-    if(command == 40) { //JUMP
-        *evmMemoryOffset = offset;
-    }
-    if(command == 41) { //JNEG
-        if (*accumulator < 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 42) { //JZ
-        if (*accumulator == 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 43) { //HALT
-        return -1;
-    }
-
-    if(command == 50) { //NOT
-        evmMemory[offset] = ~(*accumulator);
-    }
-    if(command == 51) { //AND
-        *accumulator &= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 52) { //OR
-        *accumulator |= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 53) { //XOR
-        *accumulator ^= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 54) { //JNS
-        if (*accumulator > 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 56) { //JC
-        if (*resValOverflow)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 57) { //JNC
-        if (!(*resValOverflow))
-            *evmMemoryOffset = offset;
-    }
-    if(command == 58) { //JP
-        if (*resValEven)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 59) { //JNP
-        if (!(*resValEven))
-            *evmMemoryOffset = offset;
-    }
-
-    if(command == 60) { //CHL
-        *accumulator = evmMemory[offset] << 1;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 61) { //SHR
-        *accumulator = evmMemory[offset] >> 1;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 62) { //RCL
-        *accumulator = (evmMemory[offset] << 1) | (evmMemory[offset] >> (32 - 1));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 63) { //RCR
-        *accumulator = (evmMemory[offset] >> 1) | (evmMemory[offset] << (32 - 1));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 65) { //ADDC
-        *accumulator = evmMemory[offset] + evmMemory[*accumulator];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 66) { //SUBC
-        *accumulator = evmMemory[offset] - evmMemory[*accumulator];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 67) { //LOGLC
-        *accumulator = evmMemory[offset] << *accumulator;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 68) { //LOGRC
-        *accumulator = evmMemory[offset] >> *accumulator;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 69) { //RCCL
-        *accumulator = (evmMemory[offset] << *accumulator) | (evmMemory[offset] >> (32 - *accumulator));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 70) { //RCCR
-        *accumulator = (evmMemory[offset] >> *accumulator) | (evmMemory[offset] << (32 - *accumulator));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-
-    if(command == 71) { //MOVA
-        evmMemory[*accumulator] = evmMemory[offset];
-    }
-    if(command == 72) { //MOVR
-        evmMemory[offset] = evmMemory[*accumulator];
-    }
-    if(command == 73) { //MOVCA
-        evmMemory[evmMemory[*accumulator]] = evmMemory[offset];
-    }
-    if(command == 74) { //MOVCR
-        evmMemory[evmMemory[*accumulator]] = evmMemory[offset];
-    }
-
-    if(command == 75) { //MADDC
-        *accumulator = evmMemory[offset] + evmMemory[evmMemory[*accumulator]];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 76) { //MSUBC
-        *accumulator = evmMemory[offset] - evmMemory[evmMemory[*accumulator]];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-
-    return 0;
-}
-
-int ALUB(int command, int offset, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode) {
-    int value = 0;
-
-    if (offset >= 100) {
-        return 1;
-    }
-
-    if(command == 10) { //READ
-        std::cout << "[0x" << std::hex << offset << ']' << std::dec << evmMemory[offset] << std::endl;
-    }
-    if(command == 11) { //WRITE
-        std::cout << "Input value: ";
-        std::cin >> value;
-        evmMemory[offset] = value;
-    }
-
-    if(command == 20) { //LOAD
-        *accumulator = evmMemory[offset];
-    }
-    if(command == 21) { //SAVE
-        evmMemory[offset] = *accumulator;
-    }
-
-    if(command == 30) { //ADD
-        *accumulator = *accumulator + evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 31) { //SUB
-        *accumulator = *accumulator - evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 32) { //MUL
-        *accumulator = *accumulator * evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 33) { //DIV
-        *accumulator = *accumulator / evmMemory[offset];
-        if (*accumulator < 9999 && *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-
-    if(command == 40) { //JUMP
-        *evmMemoryOffset = offset;
-    }
-    if(command == 41) { //JNEG
-        if (*accumulator < 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 42) { //JZ
-        if (*accumulator == 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 43) { //HALT
-        return -1;
-    }
-
-    if(command == 50) { //NOT
-        evmMemory[offset] = ~(*accumulator);
-    }
-    if(command == 51) { //AND
-        *accumulator &= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 52) { //OR
-        *accumulator |= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 53) { //XOR
-        *accumulator ^= evmMemory[offset];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 54) { //JNS
-        if (*accumulator > 0)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 56) { //JC
-        if (*resValOverflow)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 57) { //JNC
-        if (!(*resValOverflow))
-            *evmMemoryOffset = offset;
-    }
-    if(command == 58) { //JP
-        if (*resValEven)
-            *evmMemoryOffset = offset;
-    }
-    if(command == 59) { //JNP
-        if (!(*resValEven))
-            *evmMemoryOffset = offset;
-    }
-
-    if(command == 60) { //CHL
-        *accumulator = evmMemory[offset] << 1;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 61) { //SHR
-        *accumulator = evmMemory[offset] >> 1;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 62) { //RCL
-        *accumulator = (evmMemory[offset] << 1) | (evmMemory[offset] >> (32 - 1));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 63) { //RCR
-        *accumulator = (evmMemory[offset] >> 1) | (evmMemory[offset] << (32 - 1));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 65) { //ADDC
-        *accumulator = evmMemory[offset] + evmMemory[*accumulator];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 66) { //SUBC
-        *accumulator = evmMemory[offset] - evmMemory[*accumulator];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 67) { //LOGLC
-        *accumulator = evmMemory[offset] << *accumulator;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 68) { //LOGRC
-        *accumulator = evmMemory[offset] >> *accumulator;
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 69) { //RCCL
-        *accumulator = (evmMemory[offset] << *accumulator) | (evmMemory[offset] >> (32 - *accumulator));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 70) { //RCCR
-        *accumulator = (evmMemory[offset] >> *accumulator) | (evmMemory[offset] << (32 - *accumulator));
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-
-    if(command == 71) { //MOVA
-        evmMemory[*accumulator] = evmMemory[offset];
-    }
-    if(command == 72) { //MOVR
-        evmMemory[offset] = evmMemory[*accumulator];
-    }
-    if(command == 73) { //MOVCA
-        evmMemory[evmMemory[*accumulator]] = evmMemory[offset];
-    }
-    if(command == 74) { //MOVCR
-        evmMemory[evmMemory[*accumulator]] = evmMemory[offset];
-    }
-
-    if(command == 75) { //MADDC
-        *accumulator = evmMemory[offset] + evmMemory[evmMemory[*accumulator]];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
-    }
-    if(command == 76) { //MSUBC
-        *accumulator = evmMemory[offset] - evmMemory[evmMemory[*accumulator]];
-        if (*accumulator < 9999 || *accumulator > -9999) {
-            *resValOverflow = false;
-        } else {
-            *resValOverflow = true;
-        }
-
-        if (*accumulator % 2 == 0) {
-            *resValEven = true;
-        } else {
-            *resValEven = false;
-        }
+        sc_flagSet(evmFlag, enumFlag::Bravo, false);
     }
 
     return 0;

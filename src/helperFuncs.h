@@ -93,9 +93,9 @@ int sc_commandDecode(int value, int* command, int* operand);
 *
 */
 
-void mt_getScreenSize(int* width, int* height);
+void mt_getScreenSize(size_t* width, size_t* height);
 
-void mt_setCurPos(int x, int y);
+void mt_setCurPos(size_t x, size_t y);
 
 void mt_setCurFgColor(termClr color, bool bright);
 
@@ -105,15 +105,15 @@ void mt_clrscr();
 
 int bc_bitGet(uint32_t i_value, int i_bit);
 
-void bc_printBigChar (uint32_t mask[2], int x, int y);
+void bc_printBigChar (uint32_t mask[2], size_t x, size_t y);
 
-void bc_printBigString (std::string str, int x, int y);
+void bc_printBigString (std::string str, size_t x, size_t y);
 
 int bc_writeBigString (std::string str, std::string filepath);
 
 int bc_readBigString (std::string filepath);
 
-void bc_printBox(int x, int y, int width, int height);
+void bc_printBox(size_t x, size_t y, size_t width, size_t height);
 
 /*
 *
@@ -131,7 +131,6 @@ void rk_readkey(int * key, char * escape);
 *
 */
 
-int ALU(std::string str_sequence, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode);
-int ALUB(int command, int offset, int * evmMemory, int * evmMemoryOffset, int * accumulator, bool * resValOverflow, bool * resValEven, bool evmScriptMode);
+int ALU(int cmd, int val, int* evmMemory, int* evmFlag, int* accumulator, int* evmMemoryOffset);
 
 #endif
