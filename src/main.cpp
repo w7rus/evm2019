@@ -609,7 +609,7 @@ int main(int argc, char const *argv[]) {
             {
                 //COMPILE SIMPLEBASIC INTO SIMPLEASSEMBLY
 
-                
+
             }
             else if (keyEscape[2] == '1' && keyEscape[3] == '9')                // Key F8
             {
@@ -647,9 +647,6 @@ int main(int argc, char const *argv[]) {
 
                     continue;
                 }
-
-                std::cout << path_in << std::endl;
-                std::cout << path_out << std::endl;
 
                 std::ifstream file_in;
                 file_in.open(path_in);
