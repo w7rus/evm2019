@@ -15,9 +15,12 @@ using namespace RegistryStatusEnumFlags;
 using namespace TerminalColorsEnums;
 
 int opcounter = 0;
+int operations_done = 0;
+int memorycellwidth = 8;
 
 void signalhandler(int signum) {
     opcounter++;
+    operations_done++;
 }
 
 int main(int argc, char const *argv[]) {
@@ -91,7 +94,8 @@ int main(int argc, char const *argv[]) {
         std::string label_notice_evmScriptMode2 = "KEYHANDLING IGNORED";
 
         std::string label_EVMACCUMULATOR = "REGISTRY";
-        std::string label_EVMOPERATIONCOUNTER = "OP. COUNTER";
+        std::string label_EVMOPERATIONCOUNTER = "POSITION: ";
+        std::string label_EVMOPERATIONSDONE = "READ: ";
         std::string label_EVMFLAGS = "FLAGS";
 
         std::string label_paktc = "Press any key to continue...";
@@ -153,7 +157,7 @@ int main(int argc, char const *argv[]) {
         EVM_TERM.panel_EVMSTATUS_PositionY = 1;
 
         EVM_TERM.panel_EVMSELECTEDCELL_PositionX = 1;
-        EVM_TERM.panel_EVMSELECTEDCELL_PositionY = 1 + 2 + (int)ceil(100 / ((ceil(EVM_TERM.viewportWidth * .5) - 1) / 6));
+        EVM_TERM.panel_EVMSELECTEDCELL_PositionY = 1 + 2 + (int)ceil(100 / ((ceil(EVM_TERM.viewportWidth * .5) - 1) / memorycellwidth - 1));
 
         EVM_TERM.panel_EVMINPUT_PositionX = 1;
         EVM_TERM.panel_EVMINPUT_PositionY = EVM_TERM.panel_EVMSELECTEDCELL_PositionY + 11;
@@ -194,15 +198,42 @@ int main(int argc, char const *argv[]) {
         {
             if (i == evmMemoryOffset)
             {
-                mt_setCurFgColor(TerminalColorsEnums::RED, true);
-                std::cout << "[" << std::setw(4) << std::right << evmMemory[i] << "]";
+                mt_setCurFgColor(TerminalColorsEnums::CYAN, true);
+                if (evmMemory[i] < 0)
+                {
+                    std::cout << "[-" << std::setw(memorycellwidth - 3) << std::right << std::hex << abs(evmMemory[i]) << std::dec << "]";
+                }
+                else
+                {
+                    std::cout << "[" << std::setw(memorycellwidth - 2) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                }
+                std::cout << "\033[0m";
+            }
+            else if (i == opcounter - 1)
+            {
+                mt_setCurFgColor(TerminalColorsEnums::GREEN, true);
+                if (evmMemory[i] < 0)
+                {
+                    std::cout << "[-" << std::setw(memorycellwidth - 3) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                }
+                else
+                {
+                    std::cout << "[" << std::setw(memorycellwidth - 2) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                }
                 std::cout << "\033[0m";
             }
             else
             {
-                std::cout << "[" << std::setw(4) << std::right << evmMemory[i] << "]";
+                if (evmMemory[i] < 0)
+                {
+                    std::cout << "[-" << std::setw(memorycellwidth - 3) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                }
+                else
+                {
+                    std::cout << "[" << std::setw(memorycellwidth - 2) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                }
             }
-            if ((i + 1) % (size_t)((ceil(EVM_TERM.viewportWidth * .5) - 1) / 6) == 0)
+            if ((i + 1) % (size_t)((ceil(EVM_TERM.viewportWidth * .5) - 1) / memorycellwidth - 1) == 0)
                 std::cout << std::endl;
         }
 
@@ -220,10 +251,15 @@ int main(int argc, char const *argv[]) {
             EVM_TERM.panel_EVMSTATUS_PositionX,
             EVM_TERM.panel_EVMSTATUS_PositionY + 3
             );
-        std::cout << EVM_LABELS.label_EVMFLAGS << ": A B C D E F G H";
+        std::cout << EVM_LABELS.label_EVMOPERATIONSDONE << ": " << operations_done;
         mt_setCurPos(
             EVM_TERM.panel_EVMSTATUS_PositionX,
             EVM_TERM.panel_EVMSTATUS_PositionY + 4
+            );
+        std::cout << EVM_LABELS.label_EVMFLAGS << ": A B C D E F G H";
+        mt_setCurPos(
+            EVM_TERM.panel_EVMSTATUS_PositionX,
+            EVM_TERM.panel_EVMSTATUS_PositionY + 5
             );
         std::cout << std::setw(EVM_LABELS.label_EVMFLAGS.size() + 3) << 
             sc_flagGet(*evmFlag, RegistryStatusEnumFlags::Alpha) << " " <<
@@ -321,6 +357,7 @@ int main(int argc, char const *argv[]) {
             case 1:
                 std::cout << EVM_LABELS.label_paktc;
                 evmScriptMode = false;
+                opcounter = 0;
                 evmMemoryOffset = 0;
                 break;
 
@@ -341,6 +378,7 @@ int main(int argc, char const *argv[]) {
             if (evmMemoryOffset >= 99)
             {
                 evmScriptMode = false;
+                opcounter = 0;
                 evmMemoryOffset = 0;
             }
             else
@@ -487,6 +525,7 @@ int main(int argc, char const *argv[]) {
                     evmFlag = sc_flagInit();
                     opcounter = 0;
                     accumulator = 0;
+                    operations_done = 0;
                 }
                 break;
             
