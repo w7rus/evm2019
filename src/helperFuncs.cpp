@@ -502,7 +502,7 @@ int ALU(int cmd, int val, int* evmMemory, int* evmFlag, int* accumulator, int* e
     case 10:    //READ
         {
             std::cout << "evmMemory[" << val << "]: " << std::hex << evmMemory[val] << std::dec << std::endl;
-            return 1;
+            return 2;
         }
         break;
     case 11:    //WRITE
@@ -620,7 +620,7 @@ int ALU(int cmd, int val, int* evmMemory, int* evmFlag, int* accumulator, int* e
         evmMemory[evmMemory[*accumulator]] = evmMemory[val];
         break;
     case 74:    //MOVCR
-        evmMemory[evmMemory[*accumulator]] = evmMemory[val];
+        evmMemory[val] = evmMemory[evmMemory[*accumulator]];
         break;
     case 75:    //MADDC
         *accumulator = evmMemory[val] + evmMemory[evmMemory[*accumulator]];

@@ -26,7 +26,7 @@ int main(int argc, char const *argv[]) {
     int             evmMemoryOffset         = 0;                                // EVM MEMORY OFFSET
     std::string     evmMemoryFilePath;                                          // Path to EVM MEMORY FILE
     std::string     evmBigCharFilePath;                                         // Path to EVM BIGCHAR FILE
-    std::string     evmSimpleAssemblyScriptFilePath;                            // Path to SIMPLE ASSEMBLY SCRIPT FILE
+    std::string     evmSimpleAssemblerScriptFilePath;                            // Path to SIMPLE Assembler SCRIPT FILE
     std::string     evmSimpleBasicScriptFilePath;                               // Path to SIMPLE BASIC SCRIPT FILE
 
 
@@ -52,7 +52,7 @@ int main(int argc, char const *argv[]) {
 
         if (argv_param.compare("-sasf") == 0) {
             if (!argv_value.empty())
-                evmSimpleAssemblyScriptFilePath = argv_value;
+                evmSimpleAssemblerScriptFilePath = argv_value;
         }
 
         if (argv_param.compare("-sbsf") == 0) {
@@ -195,12 +195,12 @@ int main(int argc, char const *argv[]) {
             if (i == evmMemoryOffset)
             {
                 mt_setCurFgColor(TerminalColorsEnums::RED, true);
-                std::cout << "[" << std::setw(4) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                std::cout << "[" << std::setw(4) << std::right << evmMemory[i] << "]";
                 std::cout << "\033[0m";
             }
             else
             {
-                std::cout << "[" << std::setw(4) << std::right << std::hex << evmMemory[i] << std::dec << "]";
+                std::cout << "[" << std::setw(4) << std::right << evmMemory[i] << "]";
             }
             if ((i + 1) % (size_t)((ceil(EVM_TERM.viewportWidth * .5) - 1) / 6) == 0)
                 std::cout << std::endl;
@@ -306,7 +306,7 @@ int main(int argc, char const *argv[]) {
             pause();                                                            // Break on SIGALRM
 
             /* ALU HERE */
-            evmMemoryOffset = opcounter;
+            evmMemoryOffset = opcounter - 1;
 
             int cmd = 0;
             int val = 0;
@@ -314,12 +314,19 @@ int main(int argc, char const *argv[]) {
 
             sc_commandDecode(bsequence, &cmd, &val);
 
-            int ALU_RETURN = ALU(cmd, val, evmMemory, evmFlag, &accumulator, &evmMemoryOffset);
+            int ALU_RETURN = ALU(cmd, val, evmMemory, evmFlag, &accumulator, &opcounter);
 
             switch (ALU_RETURN)
             {
             case 1:
                 std::cout << EVM_LABELS.label_paktc;
+                evmScriptMode = false;
+                evmMemoryOffset = 0;
+                break;
+
+            case 2:
+                std::cout << EVM_LABELS.label_paktc;
+                std::cin.get();
                 std::cin.get();
                 break;
 
@@ -370,7 +377,7 @@ int main(int argc, char const *argv[]) {
                     if (!evmBigCharFilePath.empty())
                         path_in = evmBigCharFilePath;
 
-                    if (evmBigCharFilePath.size() > 256 || evmBigCharFilePath.empty())
+                    if (path_in.size() > 256 || path_in.empty())
                     {
                         std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
@@ -378,8 +385,8 @@ int main(int argc, char const *argv[]) {
 
                         continue;
                     }
-                    bc_writeBigString(evmMemorySelected, evmBigCharFilePath);
-                    std::cout << "Wrote Big Char String to file " << evmBigCharFilePath << std::endl;
+                    bc_writeBigString(evmMemorySelected, path_in);
+                    std::cout << "Wrote Big Char String to file " << path_in << std::endl;
                     std::cout << EVM_LABELS.label_paktc;
                     std::cin.get();
                 }
@@ -394,7 +401,7 @@ int main(int argc, char const *argv[]) {
                     if (!evmBigCharFilePath.empty())
                         path_in = evmBigCharFilePath;
 
-                    if (evmBigCharFilePath.size() > 256 || evmBigCharFilePath.empty())
+                    if (path_in.size() > 256 || path_in.empty())
                     {
                         std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
@@ -402,8 +409,8 @@ int main(int argc, char const *argv[]) {
 
                         continue;
                     }
-                    bc_readBigString(evmBigCharFilePath);
-                    std::cout << "Read Big Char String from file " << evmBigCharFilePath << std::endl;
+                    bc_readBigString(path_in);
+                    std::cout << "Read Big Char String from file " << path_in << std::endl;
                     std::cout << EVM_LABELS.label_paktc;
                     std::cin.get();
                 }
@@ -418,7 +425,7 @@ int main(int argc, char const *argv[]) {
                     if (!evmMemoryFilePath.empty())
                         path_in = evmMemoryFilePath;
 
-                    if (evmMemoryFilePath.size() > 256 || evmMemoryFilePath.empty())
+                    if (path_in.size() > 256 || path_in.empty())
                     {
                         std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
@@ -426,8 +433,8 @@ int main(int argc, char const *argv[]) {
 
                         continue;
                     }
-                    sc_memoryLoad(evmMemoryFilePath, evmMemory);
-                    std::cout << "Loaded Binary Script to EVM MEMORY from file " << evmBigCharFilePath << std::endl;
+                    sc_memoryLoad(path_in, evmMemory);
+                    std::cout << "Loaded Binary Script to EVM MEMORY from file " << path_in << std::endl;
                     std::cout << EVM_LABELS.label_paktc;
                     std::cin.get();
                 }
@@ -442,7 +449,7 @@ int main(int argc, char const *argv[]) {
                     if (!evmMemoryFilePath.empty())
                         path_in = evmMemoryFilePath;
 
-                    if (evmMemoryFilePath.size() > 256 || evmMemoryFilePath.empty())
+                    if (path_in.size() > 256 || path_in.empty())
                     {
                         std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
@@ -450,8 +457,8 @@ int main(int argc, char const *argv[]) {
 
                         continue;
                     }
-                    sc_memorySave(evmMemoryFilePath, evmMemory);
-                    std::cout << "Saved EVM MEMORY as Binary Script to file " << evmBigCharFilePath << std::endl;
+                    sc_memorySave(path_in, evmMemory);
+                    std::cout << "Saved EVM MEMORY as Binary Script to file " << path_in << std::endl;
                     std::cout << EVM_LABELS.label_paktc;
                     std::cin.get();
                 }
@@ -498,7 +505,7 @@ int main(int argc, char const *argv[]) {
                     std::cout << EVM_LABELS.label_warn_evmSequenceException << std::endl;
                     std::cout << EVM_LABELS.label_paktc;
                     std::cin.get();
-                    break;
+                    continue;
                 }
 
                 int cmd = 0;
@@ -607,22 +614,247 @@ int main(int argc, char const *argv[]) {
             }
             else if (keyEscape[2] == '1' && keyEscape[3] == '8')                // Key F7
             {
-                //COMPILE SIMPLEBASIC INTO SIMPLEASSEMBLY
-
-
-            }
-            else if (keyEscape[2] == '1' && keyEscape[3] == '9')                // Key F8
-            {
-                //COMPILE SIMPLEASSEMBLY INTO BINARYSCRIPTFILE
+                //COMPILE SIMPLEBASIC INTO SIMPLEASSEMBLER
 
                 std::string path_in;
                 std::string path_out;
 
-                std::cout << "SASF file (Default: " << evmSimpleAssemblyScriptFilePath << "): ";
+                std::cout << "SBSF file (Default: " << evmSimpleBasicScriptFilePath << "): ";
                 std::getline(std::cin, path_in);
 
-                if (!evmSimpleAssemblyScriptFilePath.empty())
-                    path_in = evmSimpleAssemblyScriptFilePath;
+                if (!evmSimpleBasicScriptFilePath.empty())
+                    path_in = evmSimpleBasicScriptFilePath;
+
+                if (path_in.size() > 256 || path_in.empty())
+                {
+                    std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                    std::cout << EVM_LABELS.label_paktc;
+                    std::cin.get();
+
+                    continue;
+                }
+
+                std::cout << "SASF file (Default: " << evmSimpleAssemblerScriptFilePath << "): ";
+                std::getline(std::cin, path_out);
+
+                if (!evmSimpleAssemblerScriptFilePath.empty())
+                    path_out = evmSimpleAssemblerScriptFilePath;
+
+                if (path_out.size() > 256 || path_out.empty())
+                {
+                    std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                    std::cout << EVM_LABELS.label_paktc;
+                    std::cin.get();
+
+                    continue;
+                }
+
+                std::ifstream file_in;
+                file_in.open(path_in);
+                std::ofstream file_out;
+                file_out.open(path_out);
+                if (file_in.is_open() && file_out.is_open())
+                {
+                    std::string tmpLine_file_in;
+
+                    for(;std::getline(file_in, tmpLine_file_in); )
+                    {
+                        std::stringstream ss;
+                        ss << tmpLine_file_in;
+
+                        std::string cmd_alias;
+                        ss >> cmd_alias;
+                        {
+                            if (cmd_alias.compare("REM") == 0)
+                            {
+                                continue;
+                            }
+                            else if (cmd_alias.compare("INPUT") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                std::locale loc;
+                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
+                                    str_offset[i] = std::tolower(str_offset[i], loc);
+
+                                size_t offset = std::stoi(str_offset, nullptr, 16);
+
+                                file_out << "WRITE " << offset << "\n";
+                            }
+                            else if (cmd_alias.compare("PRINT") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                std::locale loc;
+                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
+                                    str_offset[i] = std::tolower(str_offset[i], loc);
+
+                                size_t offset = std::stoi(str_offset, nullptr, 16);
+
+                                file_out << "READ " << offset << "\n";
+                            }
+                            else if (cmd_alias.compare("GOTO") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                std::locale loc;
+                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
+                                    str_offset[i] = std::tolower(str_offset[i], loc);
+
+                                size_t offset = std::stoi(str_offset, nullptr, 16);
+
+                                file_out << "JUMP " << offset << "\n";
+                            }
+                            else if (cmd_alias.compare("IF") == 0)
+                            {
+                                std::string str_offset1;
+                                std::string str_operator1;
+                                std::string str_value;
+                                std::string str_rest;
+
+                                ss >> str_offset1 >> str_operator1 >> str_value;
+                                std::getline(ss, str_rest);
+                                str_rest = str_rest.substr(1);
+
+                                std::locale loc;
+                                for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                {
+                                    str_offset1[i] = std::tolower(str_offset1[i], loc);
+                                }
+
+                                size_t offset1 = std::stoi(str_offset1, nullptr, 16);
+
+                                if (str_rest.empty())
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    std::stringstream ss2;
+                                    ss2 << str_rest;
+
+                                    std::string cmd_alias2;
+                                    ss2 >> cmd_alias2;
+                                    if (cmd_alias2.compare("GOTO") == 0)
+                                    {
+                                        std::string str_offset2;
+                                        std::getline(ss2, str_offset2);
+
+                                        size_t offset2 = std::stoi(str_offset2);
+
+                                        file_out << "LOAD " << offset1 << "\n";
+
+                                        switch (str_operator1.at(0))
+                                        {
+                                        case '<':
+                                            file_out << "JNEG " << offset2 << "\n";
+                                            break;
+                                        case '=':
+                                            file_out << "JZ " << offset2 << "\n";
+                                            break;
+                                        default:
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (cmd_alias.compare("LET") == 0)
+                            {
+                                std::string str_offset1;
+                                std::string str_offset2;
+                                std::string str_offset3;
+                                std::string str_operator1;
+                                std::string str_operator2;
+
+                                ss >> str_offset1 >> str_operator1 >> str_offset2 >> str_operator2 >> str_offset3;
+                                std::locale loc;
+                                for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                {
+                                    str_offset1[i] = std::tolower(str_offset1[i], loc);
+                                }
+                                for (std::string::size_type i = 0; i < str_offset2.length(); ++i)
+                                {
+                                    str_offset2[i] = std::tolower(str_offset2[i], loc);
+                                }
+
+                                size_t offset1 = std::stoi(str_offset1, nullptr, 16);
+                                size_t offset2 = std::stoi(str_offset2, nullptr, 16);
+
+                                if (str_operator2.empty())
+                                {
+                                    file_out << "LOAD " << offset2 << "\n";
+                                    file_out << "SAVE " << offset1 << "\n";
+                                }
+                                else
+                                {
+                                    for (std::string::size_type i = 0; i < str_offset3.length(); ++i)
+                                    {
+                                        str_offset3[i] = std::tolower(str_offset3[i], loc);
+                                    }
+
+                                    size_t offset3 = std::stoi(str_offset3, nullptr, 16);
+
+                                    file_out << "LOAD " << offset2 << "\n";
+
+                                    switch (str_operator2.at(0))
+                                    {
+                                    case '+':
+                                        file_out << "ADD " << offset3 << "\n";
+                                        break;
+                                    case '-':
+                                        file_out << "SUB " << offset3 << "\n";
+                                        break;
+                                    case '*':
+                                        file_out << "MUL " << offset3 << "\n";
+                                        break;
+                                    case '/':
+                                        file_out << "DIV " << offset3 << "\n";
+                                        break;
+                                    default:
+                                        break;
+                                    }
+
+                                    file_out << "SAVE " << offset1 << "\n";
+                                }
+                            }
+                            else if (cmd_alias.compare("END") == 0)
+                            {
+                                file_out << "HALT" << "\n";
+                            }
+                        }
+                    }
+
+                    file_in.close();
+                    file_out.close();
+
+                    std::cout << "Translated Simple Basic Script to Simple Assembler Script from file " << path_in << " to file " << path_out << std::endl;
+                    std::cout << EVM_LABELS.label_paktc;
+                    std::cin.get();
+                }
+                else
+                {
+                    std::cout << EVM_LABELS.label_warn_evmFileException << std::endl;
+                    std::cout << EVM_LABELS.label_paktc;
+                    std::cin.get();
+                    continue;
+                }
+
+            }
+            else if (keyEscape[2] == '1' && keyEscape[3] == '9')                // Key F8
+            {
+                //COMPILE SIMPLEASSEMBLER INTO BINARYSCRIPTFILE
+
+                std::string path_in;
+                std::string path_out;
+
+                std::cout << "SASF file (Default: " << evmSimpleAssemblerScriptFilePath << "): ";
+                std::getline(std::cin, path_in);
+
+                if (!evmSimpleAssemblerScriptFilePath.empty())
+                    path_in = evmSimpleAssemblerScriptFilePath;
 
                 if (path_in.size() > 256 || path_in.empty())
                 {
@@ -795,6 +1027,11 @@ int main(int argc, char const *argv[]) {
 
                     delete[] buffer;
                     fclose(file_out);
+                    file_in.close();
+
+                    std::cout << "Compiled Simple Assembler Script to Binary Script from file " << path_in << " to file " << path_out << std::endl;
+                    std::cout << EVM_LABELS.label_paktc;
+                    std::cin.get();
                 }
                 else
                 {
@@ -803,12 +1040,6 @@ int main(int argc, char const *argv[]) {
                     std::cin.get();
                     continue;
                 }
-
-                file_in.close();
-
-                std::cout << "Compiled Simple Assembly Script to Binary Script from file " << path_in << " to file " << path_out << std::endl;
-                std::cout << EVM_LABELS.label_paktc;
-                std::cin.get();
             }
         }
     }
