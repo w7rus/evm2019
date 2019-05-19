@@ -501,7 +501,7 @@ int ALU(int cmd, int val, int* evmMemory, int* evmFlag, int* accumulator, int* e
     {
     case 10:    //READ
         {
-            std::cout << "evmMemory[" << val << "]: " << std::hex << evmMemory[val] << std::dec << std::endl;
+            std::cout << "evmMemory[" << val << "]: " << std::hex << evmMemory[val] << std::dec << "(16) " << evmMemory[val] << "(10)" << std::endl;
             return 2;
         }
         break;
