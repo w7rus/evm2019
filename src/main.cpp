@@ -103,8 +103,8 @@ int main(int argc, char const *argv[]) {
 
     struct itimerval nval;                                                      // Create timer parameters structure
 
-    nval.it_value.tv_sec = 1;
-    nval.it_value.tv_usec = 0;
+    nval.it_value.tv_sec = 0;
+    nval.it_value.tv_usec = 10000;
     nval.it_interval.tv_sec = 0;
     nval.it_interval.tv_usec = 0;
 
