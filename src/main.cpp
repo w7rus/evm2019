@@ -103,8 +103,8 @@ int main(int argc, char const *argv[]) {
 
     struct itimerval nval;                                                      // Create timer parameters structure
 
-    nval.it_value.tv_sec = 0;
-    nval.it_value.tv_usec = 10000;
+    nval.it_value.tv_sec = 1;
+    nval.it_value.tv_usec = 0;
     nval.it_interval.tv_sec = 0;
     nval.it_interval.tv_usec = 0;
 
@@ -399,138 +399,138 @@ int main(int argc, char const *argv[]) {
 
             switch (keyPressed)
             {
-            case '0':
-                {
-                    std::cout << "Goodbye, cutie :3" << std::endl;
-                    return 0;
-                }
-                break;
-
-            case 'w':
-                {
-                    std::string path_in;
-                    std::cout << "BCS file (Default: " << evmBigCharFilePath << "): ";
-                    std::getline(std::cin, path_in);
-
-                    if (!evmBigCharFilePath.empty())
-                        path_in = evmBigCharFilePath;
-
-                    if (path_in.size() > 256 || path_in.empty())
+                case '0':
                     {
-                        std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                        std::cout << "Goodbye, cutie :3" << std::endl;
+                        return 0;
+                    }
+                    break;
+
+                case 'w':
+                    {
+                        std::string path_in;
+                        std::cout << "BCS file (Default: " << evmBigCharFilePath << "): ";
+                        std::getline(std::cin, path_in);
+
+                        if (!evmBigCharFilePath.empty())
+                            path_in = evmBigCharFilePath;
+
+                        if (path_in.size() > 256 || path_in.empty())
+                        {
+                            std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                            std::cout << EVM_LABELS.label_paktc;
+                            std::cin.get();
+
+                            continue;
+                        }
+                        bc_writeBigString(evmMemorySelected, path_in);
+                        std::cout << "Wrote Big Char String to file " << path_in << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
                         std::cin.get();
-
-                        continue;
                     }
-                    bc_writeBigString(evmMemorySelected, path_in);
-                    std::cout << "Wrote Big Char String to file " << path_in << std::endl;
-                    std::cout << EVM_LABELS.label_paktc;
-                    std::cin.get();
-                }
-                break;
+                    break;
 
-            case 'r':
-                {
-                    std::string path_in;
-                    std::cout << "BCS file (Default: " << evmBigCharFilePath << "): ";
-                    std::getline(std::cin, path_in);
-
-                    if (!evmBigCharFilePath.empty())
-                        path_in = evmBigCharFilePath;
-
-                    if (path_in.size() > 256 || path_in.empty())
+                case 'r':
                     {
-                        std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                        std::string path_in;
+                        std::cout << "BCS file (Default: " << evmBigCharFilePath << "): ";
+                        std::getline(std::cin, path_in);
+
+                        if (!evmBigCharFilePath.empty())
+                            path_in = evmBigCharFilePath;
+
+                        if (path_in.size() > 256 || path_in.empty())
+                        {
+                            std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                            std::cout << EVM_LABELS.label_paktc;
+                            std::cin.get();
+
+                            continue;
+                        }
+                        bc_readBigString(path_in);
+                        std::cout << "Read Big Char String from file " << path_in << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
                         std::cin.get();
-
-                        continue;
                     }
-                    bc_readBigString(path_in);
-                    std::cout << "Read Big Char String from file " << path_in << std::endl;
-                    std::cout << EVM_LABELS.label_paktc;
-                    std::cin.get();
-                }
-                break;
+                    break;
 
-            case 'l':
-                {
-                    std::string path_in;
-                    std::cout << "BSF file (Default: " << evmMemoryFilePath << "): ";
-                    std::getline(std::cin, path_in);
-
-                    if (!evmMemoryFilePath.empty())
-                        path_in = evmMemoryFilePath;
-
-                    if (path_in.size() > 256 || path_in.empty())
+                case 'l':
                     {
-                        std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                        std::string path_in;
+                        std::cout << "BSF file (Default: " << evmMemoryFilePath << "): ";
+                        std::getline(std::cin, path_in);
+
+                        if (!evmMemoryFilePath.empty())
+                            path_in = evmMemoryFilePath;
+
+                        if (path_in.size() > 256 || path_in.empty())
+                        {
+                            std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                            std::cout << EVM_LABELS.label_paktc;
+                            std::cin.get();
+
+                            continue;
+                        }
+                        sc_memoryLoad(path_in, evmMemory);
+                        std::cout << "Loaded Binary Script to EVM MEMORY from file " << path_in << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
                         std::cin.get();
-
-                        continue;
                     }
-                    sc_memoryLoad(path_in, evmMemory);
-                    std::cout << "Loaded Binary Script to EVM MEMORY from file " << path_in << std::endl;
-                    std::cout << EVM_LABELS.label_paktc;
-                    std::cin.get();
-                }
-                break;
+                    break;
 
-            case 's':
-                {
-                    std::string path_in;
-                    std::cout << "BSF file (Default: " << evmMemoryFilePath << "): ";
-                    std::getline(std::cin, path_in);
-
-                    if (!evmMemoryFilePath.empty())
-                        path_in = evmMemoryFilePath;
-
-                    if (path_in.size() > 256 || path_in.empty())
+                case 's':
                     {
-                        std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                        std::string path_in;
+                        std::cout << "BSF file (Default: " << evmMemoryFilePath << "): ";
+                        std::getline(std::cin, path_in);
+
+                        if (!evmMemoryFilePath.empty())
+                            path_in = evmMemoryFilePath;
+
+                        if (path_in.size() > 256 || path_in.empty())
+                        {
+                            std::cout << EVM_LABELS.label_error_evmPathException << std::endl;
+                            std::cout << EVM_LABELS.label_paktc;
+                            std::cin.get();
+
+                            continue;
+                        }
+                        sc_memorySave(path_in, evmMemory);
+                        std::cout << "Saved EVM MEMORY as Binary Script to file " << path_in << std::endl;
                         std::cout << EVM_LABELS.label_paktc;
                         std::cin.get();
-
-                        continue;
                     }
-                    sc_memorySave(path_in, evmMemory);
-                    std::cout << "Saved EVM MEMORY as Binary Script to file " << path_in << std::endl;
-                    std::cout << EVM_LABELS.label_paktc;
-                    std::cin.get();
-                }
-                break;
+                    break;
 
-            case '-':
-                {
-                    if (evmMemoryOffset > 0)
-                        evmMemoryOffset--;
-                }
-                break;
+                case '-':
+                    {
+                        if (evmMemoryOffset > 0)
+                            evmMemoryOffset--;
+                    }
+                    break;
 
-            case '+':
-                {
-                    if (evmMemoryOffset < 99)
-                        evmMemoryOffset++;
-                }
-                break;
+                case '+':
+                    {
+                        if (evmMemoryOffset < 99)
+                            evmMemoryOffset++;
+                    }
+                    break;
 
-            case 'q':
-                {
-                    evmMemoryOffset = 0;
-                    delete(evmMemory);
-                    evmMemory = sc_memoryInit();
-                    delete(evmFlag);
-                    evmFlag = sc_flagInit();
-                    opcounter = 0;
-                    accumulator = 0;
-                    operations_done = 0;
-                }
-                break;
-            
-            default:
-                break;
+                case 'q':
+                    {
+                        evmMemoryOffset = 0;
+                        delete(evmMemory);
+                        evmMemory = sc_memoryInit();
+                        delete(evmFlag);
+                        evmFlag = sc_flagInit();
+                        opcounter = 0;
+                        accumulator = 0;
+                        operations_done = 0;
+                    }
+                    break;
+                
+                default:
+                    break;
             }
 
             if (keyEscape[2] == '1' && keyEscape[3] == '5')                     // Key F5
@@ -696,7 +696,13 @@ int main(int argc, char const *argv[]) {
                 {
                     std::string tmpLine_file_in;
 
-                    for(;std::getline(file_in, tmpLine_file_in); )
+                    size_t cmd_size[100];
+                    for (size_t i = 0; i < 100; i++)
+                    {
+                        cmd_size[i] = 0;
+                    }
+
+                    for(size_t cmd_count = 0;std::getline(file_in, tmpLine_file_in); cmd_count++)
                     {
                         std::stringstream ss;
                         ss << tmpLine_file_in;
@@ -706,46 +712,31 @@ int main(int argc, char const *argv[]) {
                         {
                             if (cmd_alias.compare("REM") == 0)
                             {
-                                continue;
+                                cmd_size[cmd_count] = 0;
                             }
                             else if (cmd_alias.compare("INPUT") == 0)
                             {
                                 std::string str_offset;
                                 ss >> str_offset;
 
-                                std::locale loc;
-                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
-                                    str_offset[i] = std::tolower(str_offset[i], loc);
-
-                                size_t offset = std::stoi(str_offset, nullptr, 16);
-
-                                file_out << "WRITE " << offset << "\n";
+                                if (str_offset.find("0x", 0, 2) == 0)
+                                {
+                                    cmd_size[cmd_count] = 1;
+                                }
                             }
                             else if (cmd_alias.compare("PRINT") == 0)
                             {
                                 std::string str_offset;
                                 ss >> str_offset;
 
-                                std::locale loc;
-                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
-                                    str_offset[i] = std::tolower(str_offset[i], loc);
-
-                                size_t offset = std::stoi(str_offset, nullptr, 16);
-
-                                file_out << "READ " << offset << "\n";
+                                if (str_offset.find("0x", 0, 2) == 0)
+                                {
+                                    cmd_size[cmd_count] = 1;
+                                }
                             }
                             else if (cmd_alias.compare("GOTO") == 0)
                             {
-                                std::string str_offset;
-                                ss >> str_offset;
-
-                                std::locale loc;
-                                for (std::string::size_type i = 0; i < str_offset.length(); ++i)
-                                    str_offset[i] = std::tolower(str_offset[i], loc);
-
-                                size_t offset = std::stoi(str_offset, nullptr, 16);
-
-                                file_out << "JUMP " << offset << "\n";
+                                cmd_size[cmd_count] = 1;
                             }
                             else if (cmd_alias.compare("IF") == 0)
                             {
@@ -758,44 +749,18 @@ int main(int argc, char const *argv[]) {
                                 std::getline(ss, str_rest);
                                 str_rest = str_rest.substr(1);
 
-                                std::locale loc;
-                                for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                if (str_offset1.find("0x", 0, 2) == 0)
                                 {
-                                    str_offset1[i] = std::tolower(str_offset1[i], loc);
-                                }
-
-                                size_t offset1 = std::stoi(str_offset1, nullptr, 16);
-
-                                if (str_rest.empty())
-                                {
-                                    continue;
-                                }
-                                else
-                                {
-                                    std::stringstream ss2;
-                                    ss2 << str_rest;
-
-                                    std::string cmd_alias2;
-                                    ss2 >> cmd_alias2;
-                                    if (cmd_alias2.compare("GOTO") == 0)
+                                    if (!str_rest.empty())
                                     {
-                                        std::string str_offset2;
-                                        std::getline(ss2, str_offset2);
+                                        std::stringstream ss2;
+                                        ss2 << str_rest;
 
-                                        size_t offset2 = std::stoi(str_offset2);
-
-                                        file_out << "LOAD " << offset1 << "\n";
-
-                                        switch (str_operator1.at(0))
+                                        std::string cmd_alias2;
+                                        ss2 >> cmd_alias2;
+                                        if (cmd_alias2.compare("GOTO") == 0)
                                         {
-                                        case '<':
-                                            file_out << "JNEG " << offset2 << "\n";
-                                            break;
-                                        case '=':
-                                            file_out << "JZ " << offset2 << "\n";
-                                            break;
-                                        default:
-                                            break;
+                                            cmd_size[cmd_count] = 2;
                                         }
                                     }
                                 }
@@ -809,54 +774,230 @@ int main(int argc, char const *argv[]) {
                                 std::string str_operator2;
 
                                 ss >> str_offset1 >> str_operator1 >> str_offset2 >> str_operator2 >> str_offset3;
-                                std::locale loc;
-                                for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                if (str_offset1.find("0x", 0, 2) == 0)
                                 {
-                                    str_offset1[i] = std::tolower(str_offset1[i], loc);
-                                }
-                                for (std::string::size_type i = 0; i < str_offset2.length(); ++i)
-                                {
-                                    str_offset2[i] = std::tolower(str_offset2[i], loc);
-                                }
-
-                                size_t offset1 = std::stoi(str_offset1, nullptr, 16);
-                                size_t offset2 = std::stoi(str_offset2, nullptr, 16);
-
-                                if (str_operator2.empty())
-                                {
-                                    file_out << "LOAD " << offset2 << "\n";
-                                    file_out << "SAVE " << offset1 << "\n";
-                                }
-                                else
-                                {
-                                    for (std::string::size_type i = 0; i < str_offset3.length(); ++i)
+                                    if (str_offset2.find("0x", 0, 2) == 0)
                                     {
-                                        str_offset3[i] = std::tolower(str_offset3[i], loc);
+                                        if (str_operator2.empty())
+                                        {
+                                            cmd_size[cmd_count] = 2;
+                                        }
+                                        else
+                                        {
+                                            if (str_offset3.find("0x", 0, 2) == 0)
+                                            {
+                                                cmd_size[cmd_count] = 3;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        cmd_size[cmd_count] = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    file_in.close();
+                    file_in.open(path_in);
+
+                    for (size_t i = 0; i < 100; i++)
+                    {
+                        std::cout << " " << cmd_size[i];
+                    }
+
+                    std::cout << std::endl;
+
+                    size_t constcmd_amount = 0;
+
+                    for(;std::getline(file_in, tmpLine_file_in);)
+                    {
+                        std::stringstream ss;
+                        ss << tmpLine_file_in;
+
+                        std::string cmd_alias;
+                        ss >> cmd_alias;
+                        {
+                            if (cmd_alias.compare("INPUT") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                if (str_offset.find("0x", 0, 2) == 0)
+                                {
+                                    std::locale loc;
+                                    for (std::string::size_type i = 0; i < str_offset.length(); ++i)
+                                        str_offset[i] = std::tolower(str_offset[i], loc);
+
+                                    size_t offset = std::stoi(str_offset, nullptr, 16);
+
+                                    file_out << "WRITE " << offset << "\n";
+                                }
+                            }
+                            else if (cmd_alias.compare("PRINT") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                if (str_offset.find("0x", 0, 2) == 0)
+                                {
+                                    std::locale loc;
+                                    for (std::string::size_type i = 0; i < str_offset.length(); ++i)
+                                        str_offset[i] = std::tolower(str_offset[i], loc);
+
+                                    size_t offset = std::stoi(str_offset, nullptr, 16);
+
+                                    file_out << "READ " << offset << "\n";
+                                }
+                            }
+                            else if (cmd_alias.compare("GOTO") == 0)
+                            {
+                                std::string str_offset;
+                                ss >> str_offset;
+
+                                size_t offset = std::stoi(str_offset);
+
+                                size_t offset_real = 0;
+
+                                for (size_t i = 0; i < offset + constcmd_amount; i++)
+                                {
+                                    offset_real += cmd_size[i];
+                                }
+
+                                file_out << "JUMP " << offset_real << "\n";
+                            }
+                            else if (cmd_alias.compare("IF") == 0)
+                            {
+                                std::string str_offset1;
+                                std::string str_operator1;
+                                std::string str_value;
+                                std::string str_rest;
+
+                                ss >> str_offset1 >> str_operator1 >> str_value;
+                                std::getline(ss, str_rest);
+                                str_rest = str_rest.substr(1);
+
+                                if (str_offset1.find("0x", 0, 2) == 0)
+                                {
+                                    std::locale loc;
+                                    for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                    {
+                                        str_offset1[i] = std::tolower(str_offset1[i], loc);
                                     }
 
-                                    size_t offset3 = std::stoi(str_offset3, nullptr, 16);
+                                    size_t offset1 = std::stoi(str_offset1, nullptr, 16);
 
-                                    file_out << "LOAD " << offset2 << "\n";
-
-                                    switch (str_operator2.at(0))
+                                    if (!str_rest.empty())
                                     {
-                                    case '+':
-                                        file_out << "ADD " << offset3 << "\n";
-                                        break;
-                                    case '-':
-                                        file_out << "SUB " << offset3 << "\n";
-                                        break;
-                                    case '*':
-                                        file_out << "MUL " << offset3 << "\n";
-                                        break;
-                                    case '/':
-                                        file_out << "DIV " << offset3 << "\n";
-                                        break;
-                                    default:
-                                        break;
-                                    }
+                                        std::stringstream ss2;
+                                        ss2 << str_rest;
 
-                                    file_out << "SAVE " << offset1 << "\n";
+                                        std::string cmd_alias2;
+                                        ss2 >> cmd_alias2;
+                                        if (cmd_alias2.compare("GOTO") == 0)
+                                        {
+                                            std::string str_offset2;
+                                            std::getline(ss2, str_offset2);
+
+                                            size_t offset2 = std::stoi(str_offset2);
+
+                                            file_out << "LOAD " << offset1 << "\n";
+
+                                            size_t offset_real = 0;
+
+                                            for (size_t i = 0; i < offset2 + constcmd_amount; i++)
+                                            {
+                                                offset_real += cmd_size[i];
+                                            }
+
+                                            switch (str_operator1.at(0))
+                                            {
+                                                case '<':
+                                                    file_out << "JNEG " << offset_real << "\n";
+                                                    break;
+                                                case '=':
+                                                    file_out << "JZ " << offset_real << "\n";
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (cmd_alias.compare("LET") == 0)
+                            {
+                                std::string str_offset1;
+                                std::string str_offset2;
+                                std::string str_offset3;
+                                std::string str_operator1;
+                                std::string str_operator2;
+
+                                ss >> str_offset1 >> str_operator1 >> str_offset2 >> str_operator2 >> str_offset3;
+                                if (str_offset1.find("0x", 0, 2) == 0)
+                                {
+                                    std::locale loc;
+                                    for (std::string::size_type i = 0; i < str_offset1.length(); ++i)
+                                    {
+                                        str_offset1[i] = std::tolower(str_offset1[i], loc);
+                                    }
+                                    size_t offset1 = std::stoi(str_offset1, nullptr, 16);
+
+                                    if (str_offset2.find("0x", 0, 2) == 0)
+                                    {
+                                        for (std::string::size_type i = 0; i < str_offset2.length(); ++i)
+                                        {
+                                            str_offset2[i] = std::tolower(str_offset2[i], loc);
+                                        }
+                                        size_t offset2 = std::stoi(str_offset2, nullptr, 16);
+
+                                        if (str_operator2.empty())
+                                        {
+                                            file_out << "LOAD " << offset2 << "\n";
+                                            file_out << "SAVE " << offset1 << "\n";
+                                        }
+                                        else
+                                        {
+                                            if (str_offset3.find("0x", 0, 2) == 0)
+                                            {
+                                                for (std::string::size_type i = 0; i < str_offset3.length(); ++i)
+                                                {
+                                                    str_offset3[i] = std::tolower(str_offset3[i], loc);
+                                                }
+
+                                                size_t offset3 = std::stoi(str_offset3, nullptr, 16);
+
+                                                file_out << "LOAD " << offset2 << "\n";
+
+                                                switch (str_operator2.at(0))
+                                                {
+                                                    case '+':
+                                                        file_out << "ADD " << offset3 << "\n";
+                                                        break;
+                                                    case '-':
+                                                        file_out << "SUB " << offset3 << "\n";
+                                                        break;
+                                                    case '*':
+                                                        file_out << "MUL " << offset3 << "\n";
+                                                        break;
+                                                    case '/':
+                                                        file_out << "DIV " << offset3 << "\n";
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+
+                                                file_out << "SAVE " << offset1 << "\n";
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int value = std::stoi(str_offset2);
+                                        file_out << "SET " << offset1 << " " << value << "\n";
+                                        constcmd_amount += 1;
+                                    }
                                 }
                             }
                             else if (cmd_alias.compare("END") == 0)
@@ -933,7 +1074,12 @@ int main(int argc, char const *argv[]) {
                     file_in.close();
                     file_in.open(path_in);
 
-                    int* buffer = new int[lineCount_file_in];
+                    int* buffer = new int[100];
+
+                    for(size_t i = 0; i < 100; i++)
+                    {
+                        buffer[i] = 0;
+                    }
 
                     size_t bufferCount = 0;
 
@@ -948,6 +1094,17 @@ int main(int argc, char const *argv[]) {
                         std::string cmd_alias;
                         ss >> cmd_alias;
                         {
+                            if (cmd_alias.compare("SET") == 0)
+                            {
+                                std::string const_offset;
+                                std::string const_val;
+                                ss >> const_offset >> const_val;
+                                int c_offset = std::stoi(const_offset);
+                                int c_val = std::stoi(const_val);
+                                buffer[c_offset] = c_val;
+                                bufferCount -= 1;
+                                continue;
+                            }
                             if (cmd_alias.compare("READ") == 0)
                                 cmd = 10;
                             if (cmd_alias.compare("WRITE") == 0)
@@ -1055,14 +1212,9 @@ int main(int argc, char const *argv[]) {
                     // delete[] buffer;
                     // file_out.close();
 
-                    for (size_t i = 0; i < lineCount_file_in; i++)
-                    {
-                        std::cout << buffer[i] << std::endl;
-                    }
-
                     FILE * file_out = fopen(path_out.c_str(), "w+b");
 
-                    fwrite(buffer, sizeof(int), lineCount_file_in, file_out);
+                    fwrite(buffer, sizeof(int), 100, file_out);
 
                     delete[] buffer;
                     fclose(file_out);
